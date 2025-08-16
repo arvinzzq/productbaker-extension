@@ -61,6 +61,28 @@
 - **Image Processing**: Base64 encoding storage with local image management
 - **Data Structure**: Structured management of products, backlinks, and submission records
 
+## 📸 Screenshots
+
+### Product Management Interface
+![Demo 1](demo-screenshot/demo1.png)
+*Main product management interface with product selection and details view*
+
+### Product Form and Image Upload
+![Demo 2](demo-screenshot/demo2.png)
+*Product creation form with image upload functionality*
+
+### Product Details and Copy Features
+![Demo 3](demo-screenshot/demo3.png)
+*Product details page with one-click copy functionality*
+
+### Backlink Management System
+![Demo 4](demo-screenshot/demo4.png)
+*Backlink management interface for tracking submission sites*
+
+### Settings and Configuration
+![Demo 5](demo-screenshot/demo5.png)
+*Settings page with language switching and configuration options*
+
 ## 📦 Installation & Usage
 
 ### Development Environment Setup
