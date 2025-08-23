@@ -100,8 +100,8 @@ chrome.action.onClicked.addListener(async (tab) => {
             });
             
             // 绑定打开sidepanel事件
-            const sidePanelBtn = drawerElement.querySelector('#productbaker-open-sidepanel');
-            sidePanelBtn.addEventListener('click', () => {
+            const sidePanelBtn = drawerElement.querySelector('#productbaker-open-sidepanel') as HTMLButtonElement;
+            sidePanelBtn?.addEventListener('click', () => {
               // 添加点击反馈
               sidePanelBtn.style.background = '#047857';
               sidePanelBtn.textContent = '⏳ 正在打开...';
@@ -132,18 +132,25 @@ chrome.action.onClicked.addListener(async (tab) => {
               });
             });
             
+            // 首次创建时，需要确保浏览器完全渲染了初始状态后再触发动画
+            // 强制重绘并延迟触发动画
+            drawerElement.offsetHeight; // 强制重绘
+            setTimeout(() => {
+              drawerElement.style.right = '0px';
+            }, 10);
+            
             // 不需要遮罩，用户可以继续与页面交互
-          }
-          
-          // 切换显示状态
-          const currentRight = drawerElement.style.right;
-          
-          if (currentRight === '0px' || currentRight === '') {
-            // 隐藏
-            drawerElement.style.right = '-400px';
           } else {
-            // 显示
-            drawerElement.style.right = '0px';
+            // 元素已存在，切换显示状态
+            const currentRight = drawerElement.style.right;
+            
+            if (currentRight === '0px' || currentRight === '') {
+              // 隐藏
+              drawerElement.style.right = '-400px';
+            } else {
+              // 显示
+              drawerElement.style.right = '0px';
+            }
           }
           
           console.log('ProductBaker drawer toggled');

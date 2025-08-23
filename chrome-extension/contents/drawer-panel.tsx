@@ -40,16 +40,30 @@ const DrawerFloatingPanel: React.FC = () => {
       }
     }
 
-    chrome.runtime.onMessage.addListener(handleMessage)
-    window.addEventListener('TOGGLE_FLOATING_PANEL', handleCustomEvent)
+    // 添加事件监听器（确保它们都定义了）
+    if (typeof chrome !== 'undefined' && chrome.runtime?.onMessage) {
+      chrome.runtime.onMessage.addListener(handleMessage)
+    }
+    
+    if (typeof window !== 'undefined' && window.addEventListener) {
+      window.addEventListener('TOGGLE_FLOATING_PANEL', handleCustomEvent)
+    }
     
     // 添加一个全局标记，表明content script已加载
-    (window as any).productBakerContentLoaded = true
-    console.log('ProductBaker content script loaded');
+    if (typeof window !== 'undefined') {
+      (window as any).productBakerContentLoaded = true
+      console.log('ProductBaker content script loaded');
+    }
     
     return () => {
-      chrome.runtime.onMessage.removeListener(handleMessage)
-      window.removeEventListener('TOGGLE_FLOATING_PANEL', handleCustomEvent)
+      // 清理事件监听器
+      if (typeof chrome !== 'undefined' && chrome.runtime?.onMessage) {
+        chrome.runtime.onMessage.removeListener(handleMessage)
+      }
+      
+      if (typeof window !== 'undefined' && window.removeEventListener) {
+        window.removeEventListener('TOGGLE_FLOATING_PANEL', handleCustomEvent)
+      }
     }
   }, [])
 
