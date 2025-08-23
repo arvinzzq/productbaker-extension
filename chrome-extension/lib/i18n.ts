@@ -252,6 +252,38 @@ export interface Translations {
   rejectedSubmissions: string;
   approvalRate: string;
   
+  // Keyword Roots
+  keywordRoots: string;
+  keywordRootManagement: string;
+  addKeywordRoot: string;
+  editKeywordRoot: string;
+  deleteKeywordRoot: string;
+  keywordRootName: string;
+  keywords: string;
+  addKeyword: string;
+  removeKeyword: string;
+  googleTrends: string;
+  openGoogleTrends: string;
+  trendsSettings: string;
+  geography: string;
+  timeRange: string;
+  categoryId: string;
+  globalLocation: string;
+  past7Days: string;
+  past1Day: string;
+  past1Month: string;
+  past3Months: string;
+  past12Months: string;
+  past5Years: string;
+  allTime: string;
+  trendsNote: string;
+  noKeywordRoots: string;
+  noKeywordRootsDesc: string;
+  searchKeywordRoots: string;
+  atLeastOneKeyword: string;
+  keywordRootDescription: string;
+  optional: string;
+
   // Other
   screenshot: string;
   moreScreenshots: string;
@@ -509,6 +541,38 @@ const enTranslations: Translations = {
   rejectedSubmissions: 'Rejected Submissions',
   approvalRate: 'Approval Rate',
   
+  // Keyword Roots
+  keywordRoots: 'Keyword Roots',
+  keywordRootManagement: 'Keyword Root Management',
+  addKeywordRoot: 'Add Keyword Root',
+  editKeywordRoot: 'Edit Keyword Root',
+  deleteKeywordRoot: 'Delete Keyword Root',
+  keywordRootName: 'Keyword Root Name',
+  keywords: 'Keywords',
+  addKeyword: 'Add Keyword',
+  removeKeyword: 'Remove Keyword',
+  googleTrends: 'Google Trends',
+  openGoogleTrends: 'Open Google Trends',
+  trendsSettings: 'Google Trends Settings',
+  geography: 'Geography',
+  timeRange: 'Time Range',
+  categoryId: 'Category ID',
+  globalLocation: 'Global or enter location code like US, CN',
+  past7Days: 'Past 7 Days',
+  past1Day: 'Past 1 Day',
+  past1Month: 'Past 1 Month',
+  past3Months: 'Past 3 Months',
+  past12Months: 'Past 12 Months',
+  past5Years: 'Past 5 Years',
+  allTime: 'All Time',
+  trendsNote: 'Note: Google Trends compares up to 5 keywords per page. Multiple tabs will open if your root contains more than 5 keywords.',
+  noKeywordRoots: 'No Keyword Roots',
+  noKeywordRootsDesc: 'Create your first keyword root to start analyzing trends with Google Trends',
+  searchKeywordRoots: 'Search keyword roots...',
+  atLeastOneKeyword: 'Add at least one keyword',
+  keywordRootDescription: 'Description',
+  optional: 'Optional',
+
   // Other
   screenshot: 'Screenshot',
   moreScreenshots: 'more screenshots...',
@@ -766,6 +830,38 @@ const zhTranslations: Translations = {
   rejectedSubmissions: '已拒绝数',
   approvalRate: '通过率',
   
+  // Keyword Roots
+  keywordRoots: '关键词词根',
+  keywordRootManagement: '关键词词根管理',
+  addKeywordRoot: '添加关键词词根',
+  editKeywordRoot: '编辑关键词词根',
+  deleteKeywordRoot: '删除关键词词根',
+  keywordRootName: '词根名称',
+  keywords: '关键词',
+  addKeyword: '添加关键词',
+  removeKeyword: '移除关键词',
+  googleTrends: 'Google Trends',
+  openGoogleTrends: '打开 Google Trends',
+  trendsSettings: 'Google Trends 设置',
+  geography: '地理位置',
+  timeRange: '时间范围',
+  categoryId: '类别ID',
+  globalLocation: '全球或输入地区代码如 US, CN',
+  past7Days: '过去7天',
+  past1Day: '过去1天',
+  past1Month: '过去1个月',
+  past3Months: '过去3个月',
+  past12Months: '过去12个月',
+  past5Years: '过去5年',
+  allTime: '所有时间',
+  trendsNote: '注意：Google Trends 每页最多对比5个关键词。如果词根包含超过5个关键词，将打开多个标签页。',
+  noKeywordRoots: '还没有关键词词根',
+  noKeywordRootsDesc: '创建您的第一个关键词词根来开始使用Google Trends分析',
+  searchKeywordRoots: '搜索关键词词根...',
+  atLeastOneKeyword: '至少添加一个关键词',
+  keywordRootDescription: '描述',
+  optional: '可选',
+
   // Other
   screenshot: '截图',
   moreScreenshots: '张截图...',
