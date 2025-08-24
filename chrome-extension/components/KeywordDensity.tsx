@@ -32,7 +32,7 @@ export const KeywordDensity: React.FC<KeywordDensityProps> = ({ autoAnalyze = fa
 
   const getCurrentKeywords = () => {
     if (!analysis) return []
-    
+
     switch (activeTab) {
       case '1word': return analysis.oneWord
       case '2words': return analysis.twoWords
@@ -88,11 +88,10 @@ export const KeywordDensity: React.FC<KeywordDensityProps> = ({ autoAnalyze = fa
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key as any)}
-              className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === tab.key
+              className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === tab.key
                   ? 'border-blue-500 text-blue-600 bg-blue-50'
                   : 'border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300'
-              }`}
+                }`}
             >
               {tab.label}
             </button>
@@ -101,51 +100,48 @@ export const KeywordDensity: React.FC<KeywordDensityProps> = ({ autoAnalyze = fa
       </div>
 
       {/* Keywords Table */}
-      <div className="overflow-hidden">
-        {/* Table Header */}
-        <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
-          <div className="grid grid-cols-4 gap-4 text-sm font-medium text-gray-700">
-            <div>Keyword</div>
-            <div className="text-center">Count</div>
-            <div className="text-center">Total</div>
-            <div className="text-center">Density</div>
-          </div>
+      {/* Table Header */}
+      <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
+        <div className="grid grid-cols-4 gap-4 text-sm font-medium text-gray-700">
+          <div>Keyword</div>
+          <div className="text-center">Count</div>
+          <div className="text-center">Total</div>
+          <div className="text-center">Density</div>
         </div>
-        
-        {/* Table Body */}
-        <div className="max-h-96 overflow-y-auto">
-          {currentKeywords.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">
-              <p className="text-sm">No {activeTab.replace('words', ' word').replace('word', ' word')} keywords found</p>
-            </div>
-          ) : (
-            currentKeywords.map((keyword, index) => (
-              <div 
-                key={index} 
-                className={`px-4 py-3 border-b border-gray-100 hover:bg-gray-50 ${
-                  index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'
+      </div>
+
+      {/* Table Body */}
+      <div className="max-h-96 overflow-y-auto">
+        {currentKeywords.length === 0 ? (
+          <div className="p-8 text-center text-gray-500">
+            <p className="text-sm">No {activeTab.replace('words', ' word').replace('word', ' word')} keywords found</p>
+          </div>
+        ) : (
+          currentKeywords.map((keyword, index) => (
+            <div
+              key={index}
+              className={`px-4 py-3 border-b border-gray-100 hover:bg-gray-50 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'
                 }`}
-              >
-                <div className="grid grid-cols-4 gap-4 items-center text-sm">
-                  <div className="font-medium text-gray-900 break-words">
-                    {keyword.keyword}
-                  </div>
-                  <div className="text-center font-medium text-gray-800">
-                    {keyword.count}
-                  </div>
-                  <div className="text-center text-gray-600">
-                    {analysis.totalWords}
-                  </div>
-                  <div className="text-center">
-                    <span className={`font-medium ${getDensityColor(keyword.density)}`}>
-                      {keyword.density.toFixed(2)}%
-                    </span>
-                  </div>
+            >
+              <div className="grid grid-cols-4 gap-4 items-center text-sm">
+                <div className="font-medium text-gray-900 break-words">
+                  {keyword.keyword}
+                </div>
+                <div className="text-center font-medium text-gray-800">
+                  {keyword.count}
+                </div>
+                <div className="text-center text-gray-600">
+                  {analysis.totalWords}
+                </div>
+                <div className="text-center">
+                  <span className={`font-medium ${getDensityColor(keyword.density)}`}>
+                    {keyword.density.toFixed(2)}%
+                  </span>
                 </div>
               </div>
-            ))
-          )}
-        </div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   )
