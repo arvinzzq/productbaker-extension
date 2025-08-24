@@ -10,6 +10,10 @@ import { CompactPageAnalysis } from "../components/CompactPageAnalysis"
 import { TabNavigation } from "../components/TabNavigation"
 import { SEOIssues } from "../components/SEOIssues"
 import { KeywordDensity } from "../components/KeywordDensity"
+import { HeadingsAnalysis } from "../components/HeadingsAnalysis"
+import { ImagesAnalysis } from "../components/ImagesAnalysis"
+import { LinksAnalysis } from "../components/LinksAnalysis"
+import { SocialAnalysis } from "../components/SocialAnalysis"
 import { SEOAnalysisProvider } from "../hooks/useSEOAnalysis"
 import { BarChart3, FileText, Search, Globe, Image, Link, Hash } from "lucide-react"
 
@@ -155,41 +159,13 @@ const DrawerFloatingPanel: React.FC = () => {
           </div>
         )
       case 'headings':
-        return (
-          <div className="bg-gradient-to-br from-slate-50/50 to-white">
-            <div className="p-6">
-              <h3 className="text-xl font-bold text-slate-800 tracking-tight mb-4">Headings Structure</h3>
-              <p className="text-slate-600">Detailed headings analysis coming soon...</p>
-            </div>
-          </div>
-        )
+        return <HeadingsAnalysis autoAnalyze={isOpen && activeTab === 'headings'} />
       case 'images':
-        return (
-          <div className="bg-gradient-to-br from-slate-50/50 to-white">
-            <div className="p-6">
-              <h3 className="text-xl font-bold text-slate-800 tracking-tight mb-4">Images Analysis</h3>
-              <p className="text-slate-600">Images SEO analysis coming soon...</p>
-            </div>
-          </div>
-        )
+        return <ImagesAnalysis autoAnalyze={isOpen && activeTab === 'images'} />
       case 'links':
-        return (
-          <div className="bg-gradient-to-br from-slate-50/50 to-white">
-            <div className="p-6">
-              <h3 className="text-xl font-bold text-slate-800 tracking-tight mb-4">Links Analysis</h3>
-              <p className="text-slate-600">Links analysis coming soon...</p>
-            </div>
-          </div>
-        )
+        return <LinksAnalysis autoAnalyze={isOpen && activeTab === 'links'} />
       case 'social':
-        return (
-          <div className="bg-gradient-to-br from-slate-50/50 to-white">
-            <div className="p-6">
-              <h3 className="text-xl font-bold text-slate-800 tracking-tight mb-4">Social Media</h3>
-              <p className="text-slate-600">Social media analysis coming soon...</p>
-            </div>
-          </div>
-        )
+        return <SocialAnalysis autoAnalyze={isOpen && activeTab === 'social'} />
       default:
         return <CompactPageAnalysis autoAnalyze={isOpen} onTabChange={setActiveTab} />
     }

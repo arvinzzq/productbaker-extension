@@ -15,9 +15,86 @@ export interface KeywordDensityAnalysis {
   totalWords: number
 }
 
+class HTMLContentExtractor {
+  extractTextFromHTML(html: string): string {
+    // Create a temporary DOM element to parse HTML
+    const tempDiv = document.createElement('div')
+    tempDiv.innerHTML = html
+    
+    // Remove script and style elements
+    const scripts = tempDiv.querySelectorAll('script, style, noscript')
+    scripts.forEach(el => el.remove())
+    
+    // Extract text from SEO-relevant elements
+    const seoElements = [
+      'title',
+      'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+      'p',
+      'main',
+      'article',
+      '[role="main"]',
+      '.content',
+      '.post-content',
+      '.entry-content',
+      'meta[name="description"]',
+      'meta[property="og:title"]',
+      'meta[property="og:description"]'
+    ]
+    
+    let extractedText = ''
+    
+    // Extract title
+    const titleEl = tempDiv.querySelector('title')
+    if (titleEl) {
+      extractedText += titleEl.textContent + ' '
+    }
+    
+    // Extract meta description
+    const metaDesc = tempDiv.querySelector('meta[name="description"]')
+    if (metaDesc) {
+      extractedText += metaDesc.getAttribute('content') + ' '
+    }
+    
+    // Extract OG title and description
+    const ogTitle = tempDiv.querySelector('meta[property="og:title"]')
+    if (ogTitle) {
+      extractedText += ogTitle.getAttribute('content') + ' '
+    }
+    
+    const ogDesc = tempDiv.querySelector('meta[property="og:description"]')
+    if (ogDesc) {
+      extractedText += ogDesc.getAttribute('content') + ' '
+    }
+    
+    // Extract content from main content areas
+    const mainContent = tempDiv.querySelector('main, article, [role="main"], .content, .post-content, .entry-content')
+    if (mainContent) {
+      extractedText += this.getTextContent(mainContent) + ' '
+    } else {
+      // Fallback: extract from headings and paragraphs
+      const headings = tempDiv.querySelectorAll('h1, h2, h3, h4, h5, h6')
+      headings.forEach(heading => {
+        extractedText += this.getTextContent(heading) + ' '
+      })
+      
+      const paragraphs = tempDiv.querySelectorAll('p')
+      paragraphs.forEach(p => {
+        extractedText += this.getTextContent(p) + ' '
+      })
+    }
+    
+    return extractedText.trim()
+  }
+  
+  private getTextContent(element: Element): string {
+    return element.textContent || element.innerText || ''
+  }
+}
+
 export class KeywordDensityEngine {
   private static instance: KeywordDensityEngine
   private cache: Map<string, KeywordDensityAnalysis> = new Map()
+  private htmlExtractor: HTMLContentExtractor
   
   // 常见停用词
   private stopWords = new Set([
@@ -32,6 +109,10 @@ export class KeywordDensityEngine {
     'who', 'which', 'while', 'before', 'after', 'above', 'below', 'between', 'through'
   ])
   
+  constructor() {
+    this.htmlExtractor = new HTMLContentExtractor()
+  }
+  
   public static getInstance(): KeywordDensityEngine {
     if (!KeywordDensityEngine.instance) {
       KeywordDensityEngine.instance = new KeywordDensityEngine()
@@ -39,7 +120,7 @@ export class KeywordDensityEngine {
     return KeywordDensityEngine.instance
   }
   
-  public analyzeKeywordDensity(): KeywordDensityAnalysis {
+  public async analyzeKeywordDensity(): Promise<KeywordDensityAnalysis> {
     const url = window.location.href
     
     // 检查缓存
@@ -47,19 +128,76 @@ export class KeywordDensityEngine {
       return this.cache.get(url)!
     }
     
-    // 提取页面文本内容
-    const textContent = this.extractPageText()
+    try {
+      // 获取网页HTML源码
+      const htmlContent = await this.fetchPageHTML(url)
+      
+      // 从HTML源码中提取文本内容
+      const textContent = this.htmlExtractor.extractTextFromHTML(htmlContent)
+      const words = this.tokenizeText(textContent)
+      const totalWords = words.length
+      
+      // 分析不同长度的关键词
+      const oneWord = this.analyzeNGrams(words, 1, totalWords)
+      const twoWords = this.analyzeNGrams(words, 2, totalWords)
+      const threeWords = this.analyzeNGrams(words, 3, totalWords)
+      const fourWords = this.analyzeNGrams(words, 4, totalWords)
+      const fiveWords = this.analyzeNGrams(words, 5, totalWords)
+      
+      const result: KeywordDensityAnalysis = {
+        oneWord,
+        twoWords,
+        threeWords,
+        fourWords,
+        fiveWords,
+        totalWords
+      }
+      
+      // 缓存结果
+      this.cache.set(url, result)
+      
+      return result
+    } catch (error) {
+      console.error('Error analyzing keyword density:', error)
+      // 如果获取HTML失败，回退到DOM方式
+      return this.fallbackAnalyzeFromDOM()
+    }
+  }
+  
+  private async fetchPageHTML(url: string): Promise<string> {
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (compatible; SEO-Analyzer/1.0)'
+        }
+      })
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      }
+      
+      return await response.text()
+    } catch (error) {
+      console.error('Failed to fetch HTML:', error)
+      // 如果获取失败，使用当前页面的HTML
+      return document.documentElement.outerHTML
+    }
+  }
+  
+  private fallbackAnalyzeFromDOM(): KeywordDensityAnalysis {
+    // 回退到原来的DOM方式
+    const textContent = this.extractPageTextFromDOM()
     const words = this.tokenizeText(textContent)
     const totalWords = words.length
     
-    // 分析不同长度的关键词
     const oneWord = this.analyzeNGrams(words, 1, totalWords)
     const twoWords = this.analyzeNGrams(words, 2, totalWords)
     const threeWords = this.analyzeNGrams(words, 3, totalWords)
     const fourWords = this.analyzeNGrams(words, 4, totalWords)
     const fiveWords = this.analyzeNGrams(words, 5, totalWords)
     
-    const result: KeywordDensityAnalysis = {
+    return {
       oneWord,
       twoWords,
       threeWords,
@@ -67,14 +205,9 @@ export class KeywordDensityEngine {
       fiveWords,
       totalWords
     }
-    
-    // 缓存结果
-    this.cache.set(url, result)
-    
-    return result
   }
   
-  private extractPageText(): string {
+  private extractPageTextFromDOM(): string {
     // 获取页面的主要文本内容，排除导航、广告等
     const elementsToExtract = [
       'main',
