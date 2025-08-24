@@ -213,7 +213,7 @@ class SecurityManager {
     };
 
     // Check for debugger every second
-    this.debuggerDetectionInterval = setInterval(checkDebugger, this.config.maxDebuggerCheckInterval);
+    this.debuggerDetectionInterval = setInterval(checkDebugger, this.config.maxDebuggerCheckInterval) as unknown as number;
 
     // Anti-debugging statements
     const antiDebug = () => {
@@ -329,7 +329,7 @@ class SecurityManager {
         background: #ff4444;
         color: white;
         padding: 10px;
-        z-index: 10000;
+        z-index: 1000000;
         text-align: center;
         font-weight: bold;
       `;

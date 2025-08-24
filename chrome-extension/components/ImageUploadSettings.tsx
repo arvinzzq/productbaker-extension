@@ -18,7 +18,7 @@ import {
   Copy,
   ExternalLink
 } from 'lucide-react';
-import { imageUploadConfig, ImageUploadConfig } from '../lib/imageUploadConfig';
+import { imageUploadConfig, type ImageUploadConfig } from '../lib/imageUploadConfig';
 
 interface ImageUploadSettingsProps {
   onClose: () => void;

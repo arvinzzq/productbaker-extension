@@ -42,16 +42,16 @@ export const DrawerContent = React.forwardRef<HTMLDivElement, DrawerContentProps
       <div
         ref={ref}
         className={cn(
-          "fixed top-0 bottom-0 bg-background shadow-lg z-[99999]",
+          "fixed top-0 bottom-0 bg-background shadow-lg z-[99999] flex flex-col",
           side === "right" ? "right-0 border-l" : "left-0 border-r",
           className
         )}
         style={{
-          width: "500px", // 固定宽度，等同于 w-96
+          width: "540px", // 固定宽度，等同于 w-96
           transform: side === "right" 
             ? open ? "translateX(0)" : "translateX(100%)"
             : open ? "translateX(0)" : "translateX(-100%)",
-          transition: "transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1)",
+          transition: "transform 300ms ease-in-out",
         }}
         {...props}
       >
