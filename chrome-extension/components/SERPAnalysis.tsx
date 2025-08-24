@@ -8,6 +8,14 @@ interface SearchEnginePreview {
   url: string
   displayUrl: string
   favicon?: string
+  searchUrl: string
+  siteIndexUrl: string
+}
+
+interface IndexedPagesStats {
+  engine: string
+  indexedPages: number | 'loading' | 'error'
+  searchUrl: string
 }
 
 interface SERPAnalysisProps {
@@ -17,6 +25,7 @@ interface SERPAnalysisProps {
 export const SERPAnalysis: React.FC<SERPAnalysisProps> = ({ autoAnalyze = false }) => {
   const { analysis, isAnalyzing, analyzeCurrentPage } = useSEOAnalysis()
   const [previews, setPreviews] = useState<SearchEnginePreview[]>([])
+  const [indexedStats, setIndexedStats] = useState<IndexedPagesStats[]>([])
   const [isLoadingPreviews, setIsLoadingPreviews] = useState(false)
 
   useEffect(() => {
@@ -44,6 +53,11 @@ export const SERPAnalysis: React.FC<SERPAnalysisProps> = ({ autoAnalyze = false 
       const ogTitle = getMetaContent('og:title')
       const ogDescription = getMetaContent('og:description')
       
+      // Create search URLs for each engine
+      const pageTitle = analysis.title || ogTitle || domain
+      const encodedTitle = encodeURIComponent(pageTitle)
+      const encodedDomain = encodeURIComponent(domain)
+      
       const searchEnginePreviews: SearchEnginePreview[] = [
         {
           engine: 'Google',
@@ -51,7 +65,9 @@ export const SERPAnalysis: React.FC<SERPAnalysisProps> = ({ autoAnalyze = false 
           description: analysis.description || ogDescription || 'No description available',
           url: baseUrl,
           displayUrl: displayUrl.length > 60 ? displayUrl.substring(0, 60) + '...' : displayUrl,
-          favicon: analysis.faviconUrl
+          favicon: analysis.faviconUrl,
+          searchUrl: `https://www.google.com/search?q=${encodedTitle}`,
+          siteIndexUrl: `https://www.google.com/search?q=site:${encodedDomain}`
         },
         {
           engine: 'Bing',
@@ -59,7 +75,9 @@ export const SERPAnalysis: React.FC<SERPAnalysisProps> = ({ autoAnalyze = false 
           description: analysis.description || ogDescription || 'No description available',
           url: baseUrl,
           displayUrl: displayUrl.length > 55 ? displayUrl.substring(0, 55) + '...' : displayUrl,
-          favicon: analysis.faviconUrl
+          favicon: analysis.faviconUrl,
+          searchUrl: `https://www.bing.com/search?q=${encodedTitle}`,
+          siteIndexUrl: `https://www.bing.com/search?q=site:${encodedDomain}`
         },
         {
           engine: 'DuckDuckGo',
@@ -67,7 +85,9 @@ export const SERPAnalysis: React.FC<SERPAnalysisProps> = ({ autoAnalyze = false 
           description: analysis.description || ogDescription || 'No description available',
           url: baseUrl,
           displayUrl: domain,
-          favicon: analysis.faviconUrl
+          favicon: analysis.faviconUrl,
+          searchUrl: `https://duckduckgo.com/?q=${encodedTitle}`,
+          siteIndexUrl: `https://duckduckgo.com/?q=site:${encodedDomain}`
         },
         {
           engine: 'Yahoo',
@@ -75,16 +95,61 @@ export const SERPAnalysis: React.FC<SERPAnalysisProps> = ({ autoAnalyze = false 
           description: analysis.description || ogDescription || 'No description available',
           url: baseUrl,
           displayUrl: displayUrl.length > 50 ? displayUrl.substring(0, 50) + '...' : displayUrl,
-          favicon: analysis.faviconUrl
+          favicon: analysis.faviconUrl,
+          searchUrl: `https://search.yahoo.com/search?p=${encodedTitle}`,
+          siteIndexUrl: `https://search.yahoo.com/search?p=site:${encodedDomain}`
         }
       ]
 
       setPreviews(searchEnginePreviews)
+      
+      // Initialize indexed pages stats
+      const initialStats: IndexedPagesStats[] = searchEnginePreviews.map(preview => ({
+        engine: preview.engine,
+        indexedPages: 'loading',
+        searchUrl: preview.siteIndexUrl
+      }))
+      setIndexedStats(initialStats)
+      
+      // Check indexed pages for each search engine
+      checkIndexedPages(domain)
+      
     } catch (error) {
       console.error('Error generating SERP previews:', error)
     } finally {
       setIsLoadingPreviews(false)
     }
+  }
+  
+  const checkIndexedPages = async (domain: string) => {
+    // Note: Due to CORS restrictions, we can't directly fetch search results
+    // Instead, we'll provide the search URLs for users to check manually
+    // In a real implementation, you'd need a backend service to scrape these results
+    
+    const updatedStats: IndexedPagesStats[] = [
+      {
+        engine: 'Google',
+        indexedPages: 'Check manually',
+        searchUrl: `https://www.google.com/search?q=site:${domain}`
+      },
+      {
+        engine: 'Bing',
+        indexedPages: 'Check manually', 
+        searchUrl: `https://www.bing.com/search?q=site:${domain}`
+      },
+      {
+        engine: 'DuckDuckGo',
+        indexedPages: 'Check manually',
+        searchUrl: `https://duckduckgo.com/?q=site:${domain}`
+      },
+      {
+        engine: 'Yahoo',
+        indexedPages: 'Check manually',
+        searchUrl: `https://search.yahoo.com/search?p=site:${domain}`
+      }
+    ]
+    
+    setIndexedStats(updatedStats)
   }
 
   const getMetaContent = (property: string): string => {
@@ -228,11 +293,60 @@ export const SERPAnalysis: React.FC<SERPAnalysisProps> = ({ autoAnalyze = false 
           </div>
         )}
 
+        {/* Indexed Pages Stats */}
+        <div className="card-elevated bg-white rounded-lg">
+          <div className="p-4 space-y-4">
+            <h3 className="font-medium text-slate-900 text-sm">Indexed Pages by Search Engine</h3>
+            <div className="space-y-2">
+              {indexedStats.map((stat, index) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    {stat.engine === 'Google' && (
+                      <div className="w-5 h-5 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center">
+                        <span className="text-white text-xs font-bold">G</span>
+                      </div>
+                    )}
+                    {stat.engine === 'Bing' && (
+                      <div className="w-5 h-5 bg-blue-600 rounded flex items-center justify-center">
+                        <span className="text-white text-xs font-bold">B</span>
+                      </div>
+                    )}
+                    {stat.engine === 'DuckDuckGo' && (
+                      <div className="w-5 h-5 bg-orange-600 rounded-full flex items-center justify-center">
+                        <span className="text-white text-xs font-bold">D</span>
+                      </div>
+                    )}
+                    {stat.engine === 'Yahoo' && (
+                      <div className="w-5 h-5 bg-purple-600 rounded flex items-center justify-center">
+                        <span className="text-white text-xs font-bold">Y</span>
+                      </div>
+                    )}
+                    <span className="font-medium text-slate-900 text-sm">{stat.engine}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-slate-600">
+                      {typeof stat.indexedPages === 'string' ? stat.indexedPages : `${stat.indexedPages} pages`}
+                    </span>
+                    <a
+                      href={stat.searchUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-800 text-sm hover:underline"
+                    >
+                      Check →
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
         {/* Search Engine Previews */}
         <div className="space-y-3">
           {previews.map((preview, index) => (
             <div key={index} className="card-elevated bg-white rounded-lg overflow-hidden">
-              <div className="px-4 py-3 bg-slate-50 border-b flex items-center gap-2">
+              <div className="px-4 py-3 bg-slate-50 border-b flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   {preview.engine === 'Google' && (
                     <div className="w-5 h-5 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center">
@@ -256,6 +370,14 @@ export const SERPAnalysis: React.FC<SERPAnalysisProps> = ({ autoAnalyze = false 
                   )}
                   <span className="font-medium text-slate-900 text-sm">{preview.engine} Preview</span>
                 </div>
+                <a
+                  href={preview.searchUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:text-blue-800 text-sm hover:underline"
+                >
+                  Search →
+                </a>
               </div>
               
               <div className="p-4">
@@ -280,12 +402,17 @@ export const SERPAnalysis: React.FC<SERPAnalysisProps> = ({ autoAnalyze = false 
 
                   {/* Title */}
                   <div>
-                    <h3 className="text-blue-600 text-lg hover:underline cursor-pointer leading-snug">
+                    <a
+                      href={preview.searchUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 text-lg hover:underline cursor-pointer leading-snug block"
+                    >
                       {preview.engine === 'Google' ? truncateText(preview.title, 60) :
                        preview.engine === 'Bing' ? truncateText(preview.title, 65) :
                        preview.engine === 'DuckDuckGo' ? truncateText(preview.title, 55) :
                        truncateText(preview.title, 70)}
-                    </h3>
+                    </a>
                   </div>
 
                   {/* Description */}
