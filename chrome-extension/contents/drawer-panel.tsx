@@ -15,8 +15,9 @@ import { ImagesAnalysis } from "../components/ImagesAnalysis"
 import { LinksAnalysis } from "../components/LinksAnalysis"
 import { SocialAnalysis } from "../components/SocialAnalysis"
 import { SERPAnalysis } from "../components/SERPAnalysis"
+import { SEOTools } from "../components/SEOTools"
 import { SEOAnalysisProvider } from "../hooks/useSEOAnalysis"
-import { BarChart3, FileText, Search, Globe, Image, Link, Hash } from "lucide-react"
+import { BarChart3, FileText, Search, Globe, Image, Link, Hash, Wrench } from "lucide-react"
 
 import styleText from "data-text:../globals.css"
 import iconUrl from "data-base64:../assets/icon.png"
@@ -69,6 +70,7 @@ const DrawerFloatingPanel: React.FC = () => {
     { id: 'images', label: 'Images', icon: <Image className="w-3 h-3" /> },
     { id: 'links', label: 'Links', icon: <Link className="w-3 h-3" /> },
     { id: 'social', label: 'Social', icon: <Globe className="w-3 h-3" /> },
+    { id: 'tools', label: 'Tools', icon: <Wrench className="w-3 h-3" /> },
   ]
   
   useEffect(() => {
@@ -160,6 +162,8 @@ const DrawerFloatingPanel: React.FC = () => {
         return <LinksAnalysis autoAnalyze={isOpen && activeTab === 'links'} />
       case 'social':
         return <SocialAnalysis autoAnalyze={isOpen && activeTab === 'social'} />
+      case 'tools':
+        return <SEOTools autoAnalyze={isOpen && activeTab === 'tools'} />
       default:
         return <CompactPageAnalysis autoAnalyze={isOpen} onTabChange={setActiveTab} />
     }
