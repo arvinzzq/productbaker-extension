@@ -51,7 +51,11 @@ export const HeadingsAnalysis: React.FC<HeadingsAnalysisProps> = ({ autoAnalyze 
   }
 
   const getHeadingStats = () => {
-    if (!analysis) return {}
+    if (!analysis) {
+      return {
+        h1: 0, h2: 0, h3: 0, h4: 0, h5: 0, h6: 0, total: 0
+      }
+    }
     
     const stats = {
       h1: analysis.headings.h1 || 0,
@@ -146,7 +150,6 @@ export const HeadingsAnalysis: React.FC<HeadingsAnalysisProps> = ({ autoAnalyze 
               <div className="text-sm text-green-700">Total Headings</div>
             </div>
           </div>
-        </div>
         </div>
 
         {/* Issues */}

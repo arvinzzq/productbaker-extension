@@ -208,33 +208,40 @@ export const LinksAnalysis: React.FC<LinksAnalysisProps> = ({ autoAnalyze = fals
                 <div className="text-2xl font-bold text-slate-800">{stats.total}</div>
                 <div className="text-xs text-slate-600">Total Links</div>
               </div>
-          <div className="card-elevated bg-white rounded-lg p-3 text-center">
-            <div className="text-2xl font-bold text-green-600">{stats.internal}</div>
-            <div className="text-xs text-slate-600">Internal Links</div>
-          </div>
-          <div className="card-elevated bg-white rounded-lg p-3 text-center">
-            <div className="text-2xl font-bold text-orange-600">{stats.external}</div>
-            <div className="text-xs text-slate-600">External Links</div>
-          </div>
-          <div className="card-elevated bg-white rounded-lg p-3 text-center">
-            <div className="text-2xl font-bold text-purple-600">{stats.uniqueDomains}</div>
-            <div className="text-xs text-slate-600">Unique Domains</div>
+              <div className="text-center p-3 bg-slate-50 rounded-lg">
+                <div className="text-2xl font-bold text-green-600">{stats.internal}</div>
+                <div className="text-xs text-slate-600">Internal Links</div>
+              </div>
+              <div className="text-center p-3 bg-slate-50 rounded-lg">
+                <div className="text-2xl font-bold text-orange-600">{stats.external}</div>
+                <div className="text-xs text-slate-600">External Links</div>
+              </div>
+              <div className="text-center p-3 bg-slate-50 rounded-lg">
+                <div className="text-2xl font-bold text-purple-600">{stats.uniqueDomains}</div>
+                <div className="text-xs text-slate-600">Unique Domains</div>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Link Quality Stats */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="card-elevated bg-white rounded-lg p-3 text-center">
-            <div className={`text-xl font-bold ${stats.dofollow > stats.nofollow ? 'text-green-600' : 'text-orange-600'}`}>
-              {stats.dofollow}
+        <div className="card-elevated bg-white rounded-lg">
+          <div className="p-4 space-y-4">
+            <h3 className="font-medium text-slate-900 text-sm">Link Quality</h3>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="text-center p-3 bg-slate-50 rounded-lg">
+                <div className={`text-xl font-bold ${stats.dofollow > stats.nofollow ? 'text-green-600' : 'text-orange-600'}`}>
+                  {stats.dofollow}
+                </div>
+                <div className="text-xs text-slate-600">Dofollow</div>
+              </div>
+              <div className="text-center p-3 bg-slate-50 rounded-lg">
+                <div className={`text-xl font-bold ${stats.nofollow > 0 ? 'text-blue-600' : 'text-slate-400'}`}>
+                  {stats.nofollow}
+                </div>
+                <div className="text-xs text-slate-600">Nofollow</div>
+              </div>
             </div>
-            <div className="text-xs text-slate-600">Dofollow</div>
-          </div>
-          <div className="card-elevated bg-white rounded-lg p-3 text-center">
-            <div className={`text-xl font-bold ${stats.nofollow > 0 ? 'text-blue-600' : 'text-gray-400'}`}>
-              {stats.nofollow}
-            </div>
-            <div className="text-xs text-slate-600">Nofollow</div>
           </div>
         </div>
 
