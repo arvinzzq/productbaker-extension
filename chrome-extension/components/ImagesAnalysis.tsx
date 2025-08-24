@@ -144,10 +144,10 @@ export const ImagesAnalysis: React.FC<ImagesAnalysisProps> = ({ autoAnalyze = fa
 
   if (isAnalyzing || isLoadingImages) {
     return (
-      <div className="bg-gradient-to-br from-slate-50/50 to-white">
+      <div className="bg-gradient-to-br from-slate-50/30 to-white">
         <div className="p-4 text-center">
-          <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-          <p className="text-sm text-gray-600 mt-2">Analyzing images...</p>
+          <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-green-600"></div>
+          <p className="text-sm text-slate-600 mt-2">Analyzing images...</p>
         </div>
       </div>
     )
@@ -155,8 +155,8 @@ export const ImagesAnalysis: React.FC<ImagesAnalysisProps> = ({ autoAnalyze = fa
 
   if (!analysis) {
     return (
-      <div className="bg-gradient-to-br from-slate-50/50 to-white">
-        <div className="p-4 text-center text-gray-500">
+      <div className="bg-gradient-to-br from-slate-50/30 to-white">
+        <div className="p-4 text-center text-slate-500">
           <p className="text-sm">Ready to analyze images</p>
         </div>
       </div>
@@ -167,53 +167,54 @@ export const ImagesAnalysis: React.FC<ImagesAnalysisProps> = ({ autoAnalyze = fa
   const issues = getImageIssues()
 
   return (
-    <div className="bg-gradient-to-br from-slate-50/50 to-white">
+    <div className="bg-gradient-to-br from-slate-50/30 to-white">
       <div className="p-4 space-y-4">
-        
-        {/* Header */}
-        <div>
-          <h3 className="text-xl font-bold text-slate-800 tracking-tight mb-2">Images Analysis</h3>
-          <p className="text-sm text-slate-600">SEO optimization analysis for page images</p>
-        </div>
 
         {/* Statistics Cards */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="card-elevated bg-white rounded-lg p-3 text-center">
-            <div className="text-2xl font-bold text-blue-600">{stats.total}</div>
-            <div className="text-xs text-slate-600">Total Images</div>
-          </div>
-          <div className="card-elevated bg-white rounded-lg p-3 text-center">
-            <div className="text-2xl font-bold text-green-600">{stats.uniqueAlts}</div>
-            <div className="text-xs text-slate-600">Unique Alt Tags</div>
-          </div>
-          <div className="card-elevated bg-white rounded-lg p-3 text-center">
-            <div className={`text-2xl font-bold ${stats.withoutAlt > 0 ? 'text-red-600' : 'text-green-600'}`}>
-              {stats.withoutAlt}
+        <div className="card-elevated bg-white rounded-lg">
+          <div className="p-4 space-y-4">
+            <h3 className="font-medium text-slate-900 text-sm">Images Statistics</h3>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="text-center p-3 bg-slate-50 rounded-lg">
+                <div className="text-2xl font-bold text-slate-800">{stats.total}</div>
+                <div className="text-xs text-slate-600">Total Images</div>
+              </div>
+              <div className="text-center p-3 bg-slate-50 rounded-lg">
+                <div className="text-2xl font-bold text-slate-800">{stats.uniqueAlts}</div>
+                <div className="text-xs text-slate-600">Unique Alt Tags</div>
+              </div>
+              <div className="text-center p-3 bg-slate-50 rounded-lg">
+                <div className={`text-2xl font-bold ${stats.withoutAlt > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                  {stats.withoutAlt}
+                </div>
+                <div className="text-xs text-slate-600">Missing Alt</div>
+              </div>
+              <div className="text-center p-3 bg-slate-50 rounded-lg">
+                <div className={`text-2xl font-bold ${stats.withLazyLoading === 0 ? 'text-orange-600' : 'text-green-600'}`}>
+                  {stats.withLazyLoading}
+                </div>
+                <div className="text-xs text-slate-600">Lazy Loading</div>
+              </div>
             </div>
-            <div className="text-xs text-slate-600">Missing Alt</div>
-          </div>
-          <div className="card-elevated bg-white rounded-lg p-3 text-center">
-            <div className={`text-2xl font-bold ${stats.withLazyLoading === 0 ? 'text-orange-600' : 'text-green-600'}`}>
-              {stats.withLazyLoading}
-            </div>
-            <div className="text-xs text-slate-600">Lazy Loading</div>
           </div>
         </div>
 
         {/* Issues */}
         {issues.length > 0 && (
-          <div className="card-elevated bg-white rounded-lg p-4">
-            <h4 className="font-semibold text-slate-900 mb-3 flex items-center">
-              <span className="w-3 h-3 bg-red-500 rounded-full mr-2"></span>
-              SEO Issues
-            </h4>
-            <div className="space-y-2">
-              {issues.map((issue, index) => (
-                <div key={index} className="flex items-start gap-2 p-2 bg-red-50 rounded-lg">
-                  <div className="w-4 h-4 text-red-500 mt-0.5">⚠</div>
-                  <p className="text-sm text-red-700">{issue}</p>
-                </div>
-              ))}
+          <div className="card-elevated bg-white rounded-lg">
+            <div className="p-4 space-y-2">
+              <h4 className="font-medium text-slate-900 text-sm flex items-center">
+                <span className="w-3 h-3 bg-red-500 rounded-full mr-2"></span>
+                SEO Issues
+              </h4>
+              <div className="space-y-2">
+                {issues.map((issue, index) => (
+                  <div key={index} className="flex items-start gap-2 p-2 bg-red-50 rounded-lg">
+                    <div className="w-4 h-4 text-red-500 mt-0.5">⚠</div>
+                    <p className="text-sm text-red-700">{issue}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}
@@ -221,7 +222,7 @@ export const ImagesAnalysis: React.FC<ImagesAnalysisProps> = ({ autoAnalyze = fa
         {/* Images List */}
         <div className="card-elevated bg-white rounded-lg overflow-hidden">
           <div className="px-4 py-3 bg-slate-50 border-b">
-            <h4 className="font-semibold text-slate-900">Images Details</h4>
+            <h4 className="font-medium text-slate-900 text-sm">Images Details</h4>
           </div>
           
           {imagesList.length === 0 ? (
@@ -303,28 +304,30 @@ export const ImagesAnalysis: React.FC<ImagesAnalysisProps> = ({ autoAnalyze = fa
         </div>
 
         {/* SEO Recommendations */}
-        <div className="card-elevated bg-white rounded-lg p-4">
-          <h4 className="font-semibold text-slate-900 mb-3">SEO Recommendations</h4>
-          <div className="space-y-2 text-sm text-slate-600">
-            <div className="flex items-start gap-2">
-              <div className="w-4 h-4 text-blue-500 mt-0.5">💡</div>
-              <p>Add descriptive alt text to all images for accessibility and SEO</p>
-            </div>
-            <div className="flex items-start gap-2">
-              <div className="w-4 h-4 text-blue-500 mt-0.5">💡</div>
-              <p>Use modern image formats like WebP for better compression</p>
-            </div>
-            <div className="flex items-start gap-2">
-              <div className="w-4 h-4 text-blue-500 mt-0.5">💡</div>
-              <p>Implement lazy loading for images below the fold</p>
-            </div>
-            <div className="flex items-start gap-2">
-              <div className="w-4 h-4 text-blue-500 mt-0.5">💡</div>
-              <p>Optimize image file sizes to improve page load speed</p>
-            </div>
-            <div className="flex items-start gap-2">
-              <div className="w-4 h-4 text-blue-500 mt-0.5">💡</div>
-              <p>Include relevant keywords in image file names and alt text</p>
+        <div className="card-elevated bg-white rounded-lg">
+          <div className="p-4 space-y-2">
+            <h4 className="font-medium text-slate-900 text-sm">SEO Recommendations</h4>
+            <div className="space-y-2 text-sm text-slate-600">
+              <div className="flex items-start gap-2">
+                <div className="w-4 h-4 text-green-500 mt-0.5">💡</div>
+                <p>Add descriptive alt text to all images for accessibility and SEO</p>
+              </div>
+              <div className="flex items-start gap-2">
+                <div className="w-4 h-4 text-green-500 mt-0.5">💡</div>
+                <p>Use modern image formats like WebP for better compression</p>
+              </div>
+              <div className="flex items-start gap-2">
+                <div className="w-4 h-4 text-green-500 mt-0.5">💡</div>
+                <p>Implement lazy loading for images below the fold</p>
+              </div>
+              <div className="flex items-start gap-2">
+                <div className="w-4 h-4 text-green-500 mt-0.5">💡</div>
+                <p>Optimize image file sizes to improve page load speed</p>
+              </div>
+              <div className="flex items-start gap-2">
+                <div className="w-4 h-4 text-green-500 mt-0.5">💡</div>
+                <p>Include relevant keywords in image file names and alt text</p>
+              </div>
             </div>
           </div>
         </div>

@@ -101,10 +101,10 @@ export const HeadingsAnalysis: React.FC<HeadingsAnalysisProps> = ({ autoAnalyze 
 
   if (isAnalyzing) {
     return (
-      <div className="bg-gradient-to-br from-slate-50/50 to-white">
+      <div className="bg-gradient-to-br from-slate-50/30 to-white">
         <div className="p-4 text-center">
-          <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-          <p className="text-sm text-gray-600 mt-2">Analyzing headings structure...</p>
+          <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-green-600"></div>
+          <p className="text-sm text-slate-600 mt-2">Analyzing headings structure...</p>
         </div>
       </div>
     )
@@ -112,8 +112,8 @@ export const HeadingsAnalysis: React.FC<HeadingsAnalysisProps> = ({ autoAnalyze 
 
   if (!analysis) {
     return (
-      <div className="bg-gradient-to-br from-slate-50/50 to-white">
-        <div className="p-4 text-center text-gray-500">
+      <div className="bg-gradient-to-br from-slate-50/30 to-white">
+        <div className="p-4 text-center text-slate-500">
           <p className="text-sm">Ready to analyze headings structure</p>
         </div>
       </div>
@@ -124,32 +124,29 @@ export const HeadingsAnalysis: React.FC<HeadingsAnalysisProps> = ({ autoAnalyze 
   const issues = getStructureIssues()
 
   return (
-    <div className="bg-gradient-to-br from-slate-50/50 to-white">
+    <div className="bg-gradient-to-br from-slate-50/30 to-white">
       <div className="p-4 space-y-4">
         
-        {/* Header */}
-        <div>
-          <h3 className="text-xl font-bold text-slate-800 tracking-tight mb-2">Headings Structure</h3>
-          <p className="text-sm text-slate-600">Analysis of heading hierarchy and SEO optimization</p>
-        </div>
-
         {/* Statistics Card */}
-        <div className="card-elevated bg-white rounded-lg p-4">
-          <h4 className="font-semibold text-slate-900 mb-3">Headings Statistics</h4>
-          <div className="grid grid-cols-3 gap-3 mb-4">
-            {Object.entries(stats).filter(([tag]) => tag !== 'total').map(([tag, count]) => (
-              <div key={tag} className="text-center p-3 bg-slate-50 rounded-lg">
-                <div className={`text-lg font-bold ${count === 0 ? 'text-gray-400' : 'text-slate-800'}`}>
-                  {count}
+        <div className="card-elevated bg-white rounded-lg">
+          <div className="p-4 space-y-4">
+            <h3 className="font-medium text-slate-900 text-sm">Headings Statistics</h3>
+            <div className="grid grid-cols-3 gap-3 mb-4">
+              {Object.entries(stats).filter(([tag]) => tag !== 'total').map(([tag, count]) => (
+                <div key={tag} className="text-center p-3 bg-slate-50 rounded-lg">
+                  <div className={`text-lg font-bold ${count === 0 ? 'text-slate-400' : 'text-slate-800'}`}>
+                    {count}
+                  </div>
+                  <div className="text-xs text-slate-600 uppercase">{tag}</div>
                 </div>
-                <div className="text-xs text-slate-600 uppercase">{tag}</div>
-              </div>
-            ))}
+              ))}
+            </div>
+            <div className="text-center p-3 bg-green-50 rounded-lg">
+              <div className="text-xl font-bold text-green-600">{stats.total}</div>
+              <div className="text-sm text-green-700">Total Headings</div>
+            </div>
           </div>
-          <div className="text-center p-3 bg-blue-50 rounded-lg">
-            <div className="text-xl font-bold text-blue-600">{stats.total}</div>
-            <div className="text-sm text-blue-700">Total Headings</div>
-          </div>
+        </div>
         </div>
 
         {/* Issues */}

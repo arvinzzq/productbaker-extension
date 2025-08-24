@@ -172,10 +172,10 @@ export const LinksAnalysis: React.FC<LinksAnalysisProps> = ({ autoAnalyze = fals
 
   if (isAnalyzing || isLoadingLinks) {
     return (
-      <div className="bg-gradient-to-br from-slate-50/50 to-white">
+      <div className="bg-gradient-to-br from-slate-50/30 to-white">
         <div className="p-4 text-center">
-          <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-          <p className="text-sm text-gray-600 mt-2">Analyzing links...</p>
+          <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-green-600"></div>
+          <p className="text-sm text-slate-600 mt-2">Analyzing links...</p>
         </div>
       </div>
     )
@@ -183,8 +183,8 @@ export const LinksAnalysis: React.FC<LinksAnalysisProps> = ({ autoAnalyze = fals
 
   if (!analysis) {
     return (
-      <div className="bg-gradient-to-br from-slate-50/50 to-white">
-        <div className="p-4 text-center text-gray-500">
+      <div className="bg-gradient-to-br from-slate-50/30 to-white">
+        <div className="p-4 text-center text-slate-500">
           <p className="text-sm">Ready to analyze links</p>
         </div>
       </div>
@@ -196,21 +196,18 @@ export const LinksAnalysis: React.FC<LinksAnalysisProps> = ({ autoAnalyze = fals
   const domainGroups = getDomainGroups()
 
   return (
-    <div className="bg-gradient-to-br from-slate-50/50 to-white">
+    <div className="bg-gradient-to-br from-slate-50/30 to-white">
       <div className="p-4 space-y-4">
-        
-        {/* Header */}
-        <div>
-          <h3 className="text-xl font-bold text-slate-800 tracking-tight mb-2">Links Analysis</h3>
-          <p className="text-sm text-slate-600">Internal and external link analysis for SEO optimization</p>
-        </div>
 
         {/* Statistics Cards */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="card-elevated bg-white rounded-lg p-3 text-center">
-            <div className="text-2xl font-bold text-blue-600">{stats.total}</div>
-            <div className="text-xs text-slate-600">Total Links</div>
-          </div>
+        <div className="card-elevated bg-white rounded-lg">
+          <div className="p-4 space-y-4">
+            <h3 className="font-medium text-slate-900 text-sm">Links Statistics</h3>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="text-center p-3 bg-slate-50 rounded-lg">
+                <div className="text-2xl font-bold text-slate-800">{stats.total}</div>
+                <div className="text-xs text-slate-600">Total Links</div>
+              </div>
           <div className="card-elevated bg-white rounded-lg p-3 text-center">
             <div className="text-2xl font-bold text-green-600">{stats.internal}</div>
             <div className="text-xs text-slate-600">Internal Links</div>

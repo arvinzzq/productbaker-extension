@@ -14,6 +14,7 @@ import { HeadingsAnalysis } from "../components/HeadingsAnalysis"
 import { ImagesAnalysis } from "../components/ImagesAnalysis"
 import { LinksAnalysis } from "../components/LinksAnalysis"
 import { SocialAnalysis } from "../components/SocialAnalysis"
+import { SERPAnalysis } from "../components/SERPAnalysis"
 import { SEOAnalysisProvider } from "../hooks/useSEOAnalysis"
 import { BarChart3, FileText, Search, Globe, Image, Link, Hash } from "lucide-react"
 
@@ -150,14 +151,7 @@ const DrawerFloatingPanel: React.FC = () => {
           </div>
         )
       case 'serp':
-        return (
-          <div className="bg-gradient-to-br from-slate-50/50 to-white">
-            <div className="p-6">
-              <h3 className="text-xl font-bold text-slate-800 tracking-tight mb-4">SERP Analysis</h3>
-              <p className="text-slate-600">SERP analysis coming soon...</p>
-            </div>
-          </div>
-        )
+        return <SERPAnalysis autoAnalyze={isOpen && activeTab === 'serp'} />
       case 'headings':
         return <HeadingsAnalysis autoAnalyze={isOpen && activeTab === 'headings'} />
       case 'images':
