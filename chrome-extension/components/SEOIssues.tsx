@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react"
 import { Badge } from "./ui/badge"
-import { AlertTriangle, CheckCircle, XCircle, AlertCircle } from "lucide-react"
+import { AlertTriangle, CheckCircle, XCircle } from "lucide-react"
 
 interface SEOIssue {
   id: string
@@ -53,6 +53,15 @@ export const SEOIssues: React.FC<SEOIssuesProps> = ({ autoAnalyze = false }) => 
         description: `Title is ${title.length} characters (recommended: 50-60)`,
         impact: 'medium'
       })
+    } else {
+      foundIssues.push({
+        id: 'title-ok',
+        type: 'info',
+        category: 'Meta Tags',
+        title: 'Page Title Optimal',
+        description: `Title length is ${title.length} characters (within recommended range)`,
+        impact: 'low'
+      })
     }
 
     // Meta Description检查
@@ -74,6 +83,24 @@ export const SEOIssues: React.FC<SEOIssuesProps> = ({ autoAnalyze = false }) => 
         title: 'Meta Description Too Long',
         description: `Description is ${description.length} characters (recommended: 150-160)`,
         impact: 'medium'
+      })
+    } else if (description.length < 120) {
+      foundIssues.push({
+        id: 'short-description',
+        type: 'warning',
+        category: 'Meta Tags',
+        title: 'Meta Description Too Short',
+        description: `Description is ${description.length} characters (recommended: 150-160)`,
+        impact: 'medium'
+      })
+    } else {
+      foundIssues.push({
+        id: 'description-ok',
+        type: 'info',
+        category: 'Meta Tags',
+        title: 'Meta Description Optimal',
+        description: `Description length is ${description.length} characters (within recommended range)`,
+        impact: 'low'
       })
     }
 
@@ -98,20 +125,48 @@ export const SEOIssues: React.FC<SEOIssuesProps> = ({ autoAnalyze = false }) => 
         impact: 'medium',
         count: h1Tags.length
       })
+    } else {
+      foundIssues.push({
+        id: 'h1-ok',
+        type: 'info',
+        category: 'Headings',
+        title: 'H1 Tag Optimal',
+        description: 'Page has exactly one H1 tag as recommended',
+        impact: 'low'
+      })
     }
 
     // 图片Alt检查
     const images = doc.querySelectorAll('img')
     const imagesWithoutAlt = Array.from(images).filter(img => !img.alt || img.alt.trim() === '')
-    if (imagesWithoutAlt.length > 0) {
+    if (images.length === 0) {
+      foundIssues.push({
+        id: 'no-images',
+        type: 'info',
+        category: 'Images',
+        title: 'No Images Found',
+        description: 'Page contains no images',
+        impact: 'low'
+      })
+    } else if (imagesWithoutAlt.length > 0) {
       foundIssues.push({
         id: 'images-missing-alt',
         type: 'warning',
         category: 'Images',
         title: 'Images Missing Alt Text',
-        description: `${imagesWithoutAlt.length} images are missing alt text`,
+        description: `${imagesWithoutAlt.length} of ${images.length} images are missing alt text`,
         impact: 'medium',
         count: imagesWithoutAlt.length
+      })
+    } else {
+      foundIssues.push({
+        id: 'images-alt-ok',
+        type: 'info',
+        category: 'Images',
+        title: 'All Images Have Alt Text',
+        description: `All ${images.length} images have proper alt text`,
+        impact: 'low',
+        count: images.length
       })
     }
 
@@ -185,7 +240,7 @@ export const SEOIssues: React.FC<SEOIssuesProps> = ({ autoAnalyze = false }) => 
       case 'warning':
         return <AlertTriangle className="w-4 h-4 text-yellow-500" />
       case 'info':
-        return <AlertCircle className="w-4 h-4 text-blue-500" />
+        return <CheckCircle className="w-4 h-4 text-green-500" />
       default:
         return <CheckCircle className="w-4 h-4 text-green-500" />
     }
@@ -198,9 +253,9 @@ export const SEOIssues: React.FC<SEOIssuesProps> = ({ autoAnalyze = false }) => 
       case 'warning':
         return 'border-yellow-200 bg-yellow-50'
       case 'info':
-        return 'border-blue-200 bg-blue-50'
+        return 'border-green-200 bg-green-50'
       default:
-        return 'border-gray-200 bg-gray-50'
+        return 'border-green-200 bg-green-50'
     }
   }
 
@@ -231,10 +286,12 @@ export const SEOIssues: React.FC<SEOIssuesProps> = ({ autoAnalyze = false }) => 
 
   if (isAnalyzing) {
     return (
-      <div className="flex-1 p-6">
-        <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Analyzing SEO issues...</p>
+      <div className="bg-gradient-to-br from-slate-50/50 to-white">
+        <div className="p-6">
+          <div className="text-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Analyzing SEO issues...</p>
+          </div>
         </div>
       </div>
     )
@@ -271,8 +328,8 @@ export const SEOIssues: React.FC<SEOIssuesProps> = ({ autoAnalyze = false }) => 
         {issues.length === 0 ? (
         <div className="text-center py-8">
           <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-4" />
-          <h4 className="text-lg font-medium text-gray-900 mb-2">No Issues Found</h4>
-          <p className="text-gray-600">Great! Your page doesn't have any obvious SEO issues.</p>
+          <h4 className="text-lg font-medium text-gray-900 mb-2">Analysis Not Started</h4>
+          <p className="text-gray-600">Click to start SEO analysis of this page.</p>
         </div>
       ) : (
         <div className="space-y-6">

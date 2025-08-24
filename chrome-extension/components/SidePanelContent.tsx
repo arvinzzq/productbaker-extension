@@ -132,13 +132,12 @@ export function SidePanelContent() {
   }
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col drawer-3d">
       {/* Header */}
-      <div className="p-3 sm:p-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="p-3 sm:p-4 drawer-header">
         <div className="flex items-center justify-between mb-3 sm:mb-4">
           <div className="flex items-center gap-1 sm:gap-2 min-w-0">
-            <Package className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
-            <h1 className="text-base sm:text-lg font-semibold truncate">{t('appName')}</h1>
+            <h1 className="text-base sm:text-lg font-semibold text-gradient truncate">{t('appName')}</h1>
           </div>
           <div className="flex items-center gap-1 flex-shrink-0">
             <Button
@@ -164,8 +163,8 @@ export function SidePanelContent() {
 
       {/* Tabs Navigation and Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-        <div className="px-3 sm:px-4 pt-2 border-b">
-          <TabsList className="w-full">
+        <div className="px-3 sm:px-4 pt-2 border-b elevated-surface">
+          <TabsList className="w-full professional-card">
             <TabsTrigger value="products" className="flex-1">
               <Package className="h-4 w-4 mr-2" />
               Products
@@ -179,46 +178,46 @@ export function SidePanelContent() {
 
         <TabsContent value="products" className="flex-1 flex flex-col m-0 p-0">
           {/* Products Tab Header Controls */}
-          <div className="p-3 sm:p-4 border-b space-y-2 sm:space-y-3">
+          <div className="p-3 sm:p-4 border-b elevated-surface space-y-2 sm:space-y-3">
             <ProductSelector />
+            <Button 
+              onClick={handleAddProduct}
+              size="sm"
+              variant="floating"
+              className="w-full text-xs sm:text-sm interactive-lift premium-glow mb-2"
+            >
+              <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              {t('addProduct')}
+            </Button>
             <div className="grid grid-cols-2 gap-1 sm:gap-2">
               <Button 
-                onClick={handleAddProduct}
-                size="sm"
-                className="text-xs sm:text-sm"
-              >
-                <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                <span className="hidden sm:inline">{t('addProduct')}</span>
-                <span className="sm:hidden">Add</span>
-              </Button>
-              <Button 
                 onClick={handleShowBacklinks}
-                variant="outline"
+                variant="secondary"
                 size="sm"
-                className="text-xs sm:text-sm"
+                className="text-xs sm:text-sm card-elevated"
               >
                 <Link2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                 <span className="hidden sm:inline">{t('backlinks')}</span>
                 <span className="sm:hidden">Links</span>
               </Button>
+              <Button 
+                onClick={handleShowCustomOptions}
+                variant="secondary"
+                size="sm"
+                className="text-xs sm:text-sm card-elevated"
+              >
+                <Settings className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Categories</span>
+                <span className="sm:hidden">Categories</span>
+              </Button>
             </div>
-            <Button 
-              onClick={handleShowCustomOptions}
-              variant="ghost"
-              size="sm"
-              className="w-full text-xs sm:text-sm"
-            >
-              <Settings className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">Categories & Tags</span>
-              <span className="sm:hidden">Categories</span>
-            </Button>
           </div>
 
           {/* Products Content */}
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto bg-background">
             {error && (
               <div className="p-2 sm:p-4">
-                <Card className="border-destructive">
+                <Card className="border-destructive card-elevated">
                   <CardContent className="p-3 sm:p-4">
                     <p className="text-xs sm:text-sm text-destructive break-words">{error}</p>
                   </CardContent>
@@ -238,7 +237,7 @@ export function SidePanelContent() {
                 <p className="text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-4 px-2">
                   {t('noProductsDesc')}
                 </p>
-                <Button onClick={handleAddProduct} size="sm" className="text-xs sm:text-sm">
+                <Button onClick={handleAddProduct} size="sm" variant="floating" className="text-xs sm:text-sm interactive-lift premium-glow">
                   <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                   {t('addProduct')}
                 </Button>
@@ -262,14 +261,14 @@ export function SidePanelContent() {
 
         <TabsContent value="keywords" className="flex-1 flex flex-col m-0 p-0 h-full">
           {/* Keywords Content */}
-          <div className="flex-1 flex items-center justify-center min-h-0">
-            <div className="w-full max-w-md p-3 sm:p-4 flex flex-col items-center justify-center text-center">
-              <TrendingUp className="h-8 w-8 sm:h-12 sm:w-12 text-muted-foreground mb-2 sm:mb-4" />
-              <h3 className="text-sm sm:text-lg font-medium mb-1 sm:mb-2">Keyword Trends Analysis</h3>
-              <p className="text-xs sm:text-sm text-muted-foreground mb-4 px-2">
+          <div className="p-3 sm:p-4 bg-background">
+            <div className="professional-card rounded-lg p-4 text-center">
+              <TrendingUp className="h-8 w-8 sm:h-10 sm:w-10 text-muted-foreground mb-3 mx-auto" />
+              <h3 className="text-sm sm:text-base font-medium mb-2">Keyword Trends Analysis</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground mb-4 leading-relaxed">
                 Analyze keyword trends with Google Trends. Create groups of keywords and compare their popularity over time.
               </p>
-              <Button onClick={handleShowKeywordTrends} size="sm">
+              <Button onClick={handleShowKeywordTrends} size="sm" variant="floating" className="interactive-lift">
                 <TrendingUp className="h-4 w-4 mr-2" />
                 Start Analysis
               </Button>

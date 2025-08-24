@@ -42,8 +42,8 @@ export const DrawerContent = React.forwardRef<HTMLDivElement, DrawerContentProps
       <div
         ref={ref}
         className={cn(
-          "fixed top-0 bottom-0 bg-background shadow-lg z-[99999] flex flex-col",
-          side === "right" ? "right-0 border-l" : "left-0 border-r",
+          "fixed top-0 bottom-0 drawer-3d z-[99999] flex flex-col h-screen",
+          side === "right" ? "right-0" : "left-0",
           className
         )}
         style={{

@@ -9,6 +9,7 @@ import { CopyButton } from './CopyButton';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 import { Edit, Globe, Mail, Tag, Calendar, Image as ImageIcon, Trash2, Download } from 'lucide-react';
 import { getCategoryLabel, getTagLabel } from '../lib/constants';
+import { cn } from '../lib/utils';
 
 interface ProductDisplayProps {
   product: Product;
@@ -101,7 +102,7 @@ export function ProductDisplay({ product, onEdit }: ProductDisplayProps) {
         />
       </div>
       <div className={cn(
-        "text-xs sm:text-sm bg-muted/50 rounded-md p-2 sm:p-3 border",
+        "text-xs sm:text-sm bg-muted/50 rounded-md p-2 sm:p-3 professional-border",
         multiline && "min-h-[60px] sm:min-h-[80px]"
       )}>
         {multiline ? (
@@ -114,9 +115,10 @@ export function ProductDisplay({ product, onEdit }: ProductDisplayProps) {
   );
 
   return (
-    <div className="p-2 sm:p-4 space-y-3 sm:space-y-4">
+    <div className="h-full overflow-y-auto">
+      <div className="p-2 sm:p-4 space-y-3 sm:space-y-4">
       {/* Header with Logo and Actions */}
-      <Card>
+      <Card className="card-floating">
         <CardHeader className="pb-3">
           <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
             <div className="flex items-center space-x-3 min-w-0">
@@ -147,14 +149,14 @@ export function ProductDisplay({ product, onEdit }: ProductDisplayProps) {
               </div>
             </div>
             <div className="flex space-x-1 sm:space-x-2 flex-shrink-0">
-              <Button onClick={onEdit} size="sm" variant="outline" className="text-xs sm:text-sm">
+              <Button onClick={onEdit} size="sm" variant="floating" className="text-xs sm:text-sm">
                 <Edit className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
                 <span className="hidden sm:inline">{t('edit')}</span>
               </Button>
               
               <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button size="sm" variant="outline" className="text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground text-xs sm:text-sm">
+                  <Button size="sm" variant="outline" className="text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground text-xs sm:text-sm card-elevated">
                     <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
                     <span className="hidden sm:inline">{t('delete')}</span>
                   </Button>
@@ -200,7 +202,7 @@ export function ProductDisplay({ product, onEdit }: ProductDisplayProps) {
       </Card>
 
       {/* Product Fields */}
-      <Card>
+      <Card className="card-floating">
         <CardContent className="p-4 space-y-4">
           <FieldRow 
             label={t('website')} 
@@ -235,7 +237,7 @@ export function ProductDisplay({ product, onEdit }: ProductDisplayProps) {
               </div>
               <div className="flex flex-wrap gap-1 sm:gap-2">
                 {product.categories.map(category => (
-                  <Badge key={category} variant="outline" className="text-xs">
+                  <Badge key={category} variant="outline" className="text-xs card-elevated">
                     {getCategoryLabel(category, currentLanguage)}
                   </Badge>
                 ))}
@@ -281,7 +283,7 @@ export function ProductDisplay({ product, onEdit }: ProductDisplayProps) {
                     <img 
                       src={screenshot} 
                       alt={`${product.name} ${t('screenshot')} ${index + 1}`}
-                      className="w-full h-16 sm:h-20 object-cover rounded-md border cursor-pointer hover:opacity-80 transition-opacity"
+                      className="w-full h-16 sm:h-20 object-cover rounded-md professional-border cursor-pointer hover:opacity-80 transition-all duration-200 hover:scale-105"
                       onClick={() => window.open(screenshot, '_blank')}
                       onError={(e) => {
                         (e.target as HTMLImageElement).style.display = 'none';
@@ -313,7 +315,7 @@ export function ProductDisplay({ product, onEdit }: ProductDisplayProps) {
       </Card>
 
       {/* Metadata */}
-      <Card>
+      <Card className="card-floating">
         <CardContent className="p-3 sm:p-4 space-y-2 sm:space-y-3">
           <div className="flex items-center space-x-1 sm:space-x-2 text-xs text-muted-foreground">
             <Calendar className="h-3 w-3 flex-shrink-0" />
@@ -377,6 +379,7 @@ export function ProductDisplay({ product, onEdit }: ProductDisplayProps) {
           </CopyButton>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }

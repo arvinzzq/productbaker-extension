@@ -55,15 +55,15 @@ const DrawerFloatingPanel: React.FC = () => {
   }
   
   const tabs = [
-    { id: 'overview', label: 'Overview', icon: <BarChart3 className="w-5 h-5" /> },
-    { id: 'traffic', label: 'Traffic', icon: <BarChart3 className="w-5 h-5" /> },
-    { id: 'issues', label: 'Issues', icon: <FileText className="w-5 h-5" /> },
-    { id: 'serp', label: 'SERP', icon: <Search className="w-5 h-5" /> },
-    { id: 'density', label: 'Density', icon: <Hash className="w-5 h-5" /> },
-    { id: 'headings', label: 'Headings', icon: <FileText className="w-5 h-5" /> },
-    { id: 'images', label: 'Images', icon: <Image className="w-5 h-5" /> },
-    { id: 'links', label: 'Links', icon: <Link className="w-5 h-5" /> },
-    { id: 'social', label: 'Social', icon: <Globe className="w-5 h-5" /> },
+    { id: 'overview', label: 'Overview', icon: <BarChart3 className="w-3 h-3" /> },
+    { id: 'traffic', label: 'Traffic', icon: <BarChart3 className="w-3 h-3" /> },
+    { id: 'issues', label: 'Issues', icon: <FileText className="w-3 h-3" /> },
+    { id: 'keyword', label: 'Keyword', icon: <Hash className="w-3 h-3" /> },
+    { id: 'serp', label: 'SERP', icon: <Search className="w-3 h-3" /> },
+    { id: 'headings', label: 'Headings', icon: <FileText className="w-3 h-3" /> },
+    { id: 'images', label: 'Images', icon: <Image className="w-3 h-3" /> },
+    { id: 'links', label: 'Links', icon: <Link className="w-3 h-3" /> },
+    { id: 'social', label: 'Social', icon: <Globe className="w-3 h-3" /> },
   ]
   
   useEffect(() => {
@@ -131,11 +131,11 @@ const DrawerFloatingPanel: React.FC = () => {
   const renderTabContent = () => {
     switch (activeTab) {
       case 'overview':
-        return <CompactPageAnalysis autoAnalyze={isOpen} />
+        return <CompactPageAnalysis autoAnalyze={isOpen} onTabChange={setActiveTab} />
       case 'issues':
         return <SEOIssues autoAnalyze={isOpen && activeTab === 'issues'} />
-      case 'density':
-        return <KeywordDensity autoAnalyze={isOpen && activeTab === 'density'} />
+      case 'keyword':
+        return <KeywordDensity autoAnalyze={isOpen && activeTab === 'keyword'} />
       case 'traffic':
         return (
           <div className="bg-gradient-to-br from-slate-50/50 to-white">
@@ -191,7 +191,7 @@ const DrawerFloatingPanel: React.FC = () => {
           </div>
         )
       default:
-        return <CompactPageAnalysis autoAnalyze={isOpen} />
+        return <CompactPageAnalysis autoAnalyze={isOpen} onTabChange={setActiveTab} />
     }
   }
 
@@ -200,34 +200,40 @@ const DrawerFloatingPanel: React.FC = () => {
       <Drawer open={isOpen} onOpenChange={setIsOpen}>
         <DrawerContent side="right">
           {/* Header with logo and toggle button */}
-          <DrawerHeader className="bg-white text-gray-800 px-4 py-3 flex-shrink-0 border-b border-gray-200 shadow-sm">
+          <DrawerHeader className="drawer-header text-gray-800 px-4 py-3 flex-shrink-0 bg-gradient-to-r from-white via-gray-50/80 to-white shadow-lg border-b-2 border-gray-100/50">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <img 
                   src={iconUrl} 
                   alt="ProductBaker Logo"
-                  className="w-5 h-5 rounded"
+                  className="w-6 h-6 rounded logo-3d-effect transition-all duration-300 hover:scale-110 hover:-rotate-2"
                 />
-                <DrawerTitle className="text-primary text-sm font-medium">
+                <DrawerTitle className="text-sm font-medium bg-gradient-to-r from-green-700 to-green-600 bg-clip-text text-transparent drop-shadow-sm">
                   ProductBaker
                 </DrawerTitle>
               </div>
               <div className="flex items-center gap-2">
                 <button 
                   onClick={toggleSidePanel}
-                  className={`transition-colors w-6 h-6 flex items-center justify-center text-lg cursor-pointer rounded ${
+                  className={`transition-all duration-300 w-6 h-6 flex items-center justify-center text-lg cursor-pointer rounded-md shadow-sm transform hover:scale-110 ${
                     isSidePanelOpen 
-                      ? 'text-green-600 bg-green-50 hover:bg-green-100' 
-                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                      ? 'text-green-600 bg-green-50 hover:bg-green-100 shadow-md ring-1 ring-green-200' 
+                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100 hover:shadow-md'
                   }`}
                   title={isSidePanelOpen ? "Side Panel Open" : "Toggle Side Panel"}
+                  style={{
+                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
+                  }}
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                   </svg>
                 </button>
                 <DrawerClose 
-                  className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors w-6 h-6 flex items-center justify-center text-lg cursor-pointer rounded"
+                  className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-all duration-300 w-6 h-6 flex items-center justify-center text-lg cursor-pointer rounded-md shadow-sm transform hover:scale-110 hover:shadow-md"
+                  style={{
+                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
+                  }}
                 >
                   ×
                 </DrawerClose>
@@ -236,7 +242,7 @@ const DrawerFloatingPanel: React.FC = () => {
           </DrawerHeader>
 
           {/* Main content with sidebar navigation */}
-          <div className="flex flex-1 min-h-0">
+          <div className="flex flex-1 overflow-hidden">
             <TabNavigation 
               tabs={tabs}
               activeTab={activeTab}
@@ -244,7 +250,7 @@ const DrawerFloatingPanel: React.FC = () => {
             />
             
             {/* Tab content area */}
-            <div className="flex-1 min-h-0 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto">
               {renderTabContent()}
             </div>
           </div>
