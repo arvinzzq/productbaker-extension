@@ -24,13 +24,8 @@ export const config = {
 
 export const getStyle = () => {
   const style = document.createElement("style")
-  style.textContent = styleText
-  // 确保样式被添加到document.head
-  if (!document.head.querySelector('#productbaker-styles')) {
-    style.id = 'productbaker-styles'
-    document.head.appendChild(style)
-    console.log('ProductBaker styles injected')
-  }
+  // Replace :root with :host for proper CSS isolation in shadow DOM
+  style.textContent = styleText.replaceAll(':root', ':host(plasmo-csui)')
   return style
 }
 
@@ -52,9 +47,6 @@ const DrawerFloatingPanel: React.FC = () => {
   ]
   
   useEffect(() => {
-    // 确保样式被注入
-    getStyle();
-    
     // 确保初始状态为关闭
     setIsOpen(false);
     console.log('Content script initialized, drawer state reset to closed');
