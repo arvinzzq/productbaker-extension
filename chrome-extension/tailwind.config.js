@@ -8,6 +8,9 @@ module.exports = {
   ],
   theme: {
     extend: {
+      backgroundImage: {
+        'gradient-radial': 'radial-gradient(1000px 360px at 50% -180px, #eafff0 0%, #ffffff 50%)',
+      },
       animation: {
         "fade-in": "fadeIn 150ms ease",
         "fade-out": "fadeOut 150ms ease",

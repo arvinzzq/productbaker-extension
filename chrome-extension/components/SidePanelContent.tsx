@@ -11,7 +11,7 @@ import { SettingsManager } from './SettingsManager';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from './ui/tabs';
-import { Plus, Package, Link2, Settings, MoreHorizontal, TrendingUp } from 'lucide-react';
+import { Plus, Package, Link2, Settings, MoreHorizontal, TrendingUp, X } from 'lucide-react';
 
 export function SidePanelContent() {
   const { state, getSelectedProduct } = useProducts();
@@ -73,6 +73,17 @@ export function SidePanelContent() {
 
   const handleCloseSettings = () => {
     setShowSettings(false);
+  };
+
+  const handleClosePanel = async () => {
+    try {
+      // Notify background script that panel is being closed
+      await chrome.runtime.sendMessage({ action: 'sidePanelClosed' });
+      // Try to close the window
+      window.close();
+    } catch (error) {
+      console.error('Failed to close side panel:', error);
+    }
   };
 
   if (showSettings) {
@@ -137,6 +148,15 @@ export function SidePanelContent() {
               className="h-7 w-7 sm:h-8 sm:w-8"
             >
               <MoreHorizontal className="h-3 w-3 sm:h-4 sm:w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleClosePanel}
+              className="h-7 w-7 sm:h-8 sm:w-8"
+              title="Close Side Panel"
+            >
+              <X className="h-3 w-3 sm:h-4 sm:w-4" />
             </Button>
           </div>
         </div>

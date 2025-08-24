@@ -14,6 +14,7 @@ import { SEOAnalysisProvider } from "../hooks/useSEOAnalysis"
 import { BarChart3, FileText, Search, Globe, Image, Link, Hash } from "lucide-react"
 
 import styleText from "data-text:../globals.css"
+import iconUrl from "data-base64:../assets/icon.png"
 
 export const config = {
   matches: ["https://*/*"],
@@ -32,6 +33,26 @@ export const getStyle = () => {
 const DrawerFloatingPanel: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false)
   const [activeTab, setActiveTab] = useState('overview')
+  const [isSidePanelOpen, setIsSidePanelOpen] = useState(false)
+
+  const toggleSidePanel = async () => {
+    try {
+      if (!isSidePanelOpen) {
+        // 打开 side panel
+        const response = await chrome.runtime.sendMessage({ action: 'openSidePanel' })
+        if (response?.success) {
+          setIsSidePanelOpen(true)
+        }
+      } else {
+        // 关闭 side panel (目前Chrome API没有直接关闭方法，但我们可以更新状态)
+        setIsSidePanelOpen(false)
+        // 注意：Chrome side panel 没有程序化关闭API，用户需要手动关闭
+        console.log('Side panel toggle - user needs to manually close side panel')
+      }
+    } catch (error) {
+      console.error('Failed to toggle side panel:', error)
+    }
+  }
   
   const tabs = [
     { id: 'overview', label: 'Overview', icon: <BarChart3 className="w-5 h-5" /> },
@@ -178,22 +199,39 @@ const DrawerFloatingPanel: React.FC = () => {
     <SEOAnalysisProvider>
       <Drawer open={isOpen} onOpenChange={setIsOpen}>
         <DrawerContent side="right">
-          {/* Header with close button */}
+          {/* Header with logo and toggle button */}
           <DrawerHeader className="bg-white text-gray-800 px-4 py-3 flex-shrink-0 border-b border-gray-200 shadow-sm">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-5 h-5 bg-green-600 rounded text-white text-xs flex items-center justify-center font-bold">
-                  P
-                </div>
+                <img 
+                  src={iconUrl} 
+                  alt="ProductBaker Logo"
+                  className="w-5 h-5 rounded"
+                />
                 <DrawerTitle className="text-primary text-sm font-medium">
                   ProductBaker
                 </DrawerTitle>
               </div>
-              <DrawerClose 
-                className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors w-6 h-6 flex items-center justify-center text-lg cursor-pointer rounded"
-              >
-                ×
-              </DrawerClose>
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={toggleSidePanel}
+                  className={`transition-colors w-6 h-6 flex items-center justify-center text-lg cursor-pointer rounded ${
+                    isSidePanelOpen 
+                      ? 'text-green-600 bg-green-50 hover:bg-green-100' 
+                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                  }`}
+                  title={isSidePanelOpen ? "Side Panel Open" : "Toggle Side Panel"}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                </button>
+                <DrawerClose 
+                  className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors w-6 h-6 flex items-center justify-center text-lg cursor-pointer rounded"
+                >
+                  ×
+                </DrawerClose>
+              </div>
             </div>
           </DrawerHeader>
 

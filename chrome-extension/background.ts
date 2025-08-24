@@ -4,7 +4,7 @@
 chrome.runtime.onInstalled.addListener(() => {
   console.log('ProductBaker extension installed');
   
-  // Enable side panel for all tabs
+  // Enable side panel for all tabs - set to false so popup shows first
   chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: false });
 });
 
@@ -44,6 +44,9 @@ chrome.runtime.onStartup.addListener(() => {
   console.log('ProductBaker extension started');
 });
 
+// Track side panel state per tab
+const sidePanelState = new Map<number, boolean>();
+
 // Handle messages from content scripts or side panel
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   console.log('Message received:', request);
@@ -54,7 +57,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       const tabId = sender.tab?.id;
       if (tabId) {
         chrome.sidePanel.open({ tabId: tabId })
-          .then(() => sendResponse({ success: true }))
+          .then(() => {
+            sidePanelState.set(tabId, true);
+            sendResponse({ success: true });
+          })
           .catch((error) => {
             console.error('Failed to open side panel:', error);
             sendResponse({ success: false, error: error.message });
@@ -65,7 +71,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         chrome.tabs.query({ active: true, currentWindow: true })
           .then(tabs => {
             if (tabs[0]?.id) {
-              return chrome.sidePanel.open({ tabId: tabs[0].id });
+              return chrome.sidePanel.open({ tabId: tabs[0].id }).then(() => {
+                sidePanelState.set(tabs[0].id!, true);
+              });
             }
             throw new Error('No active tab found');
           })
@@ -77,10 +85,86 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         return true;
       }
       break;
+
+    case 'toggleSidePanel':
+      const toggleTabId = sender.tab?.id;
+      const handleToggle = (targetTabId: number) => {
+        const isOpen = sidePanelState.get(targetTabId) || false;
+        
+        if (isOpen) {
+          // Since there's no direct close API, we'll mark as closed and let the UI handle it
+          sidePanelState.set(targetTabId, false);
+          sendResponse({ success: true, action: 'closed', shouldClose: true });
+        } else {
+          // Open the side panel
+          chrome.sidePanel.open({ tabId: targetTabId })
+            .then(() => {
+              sidePanelState.set(targetTabId, true);
+              sendResponse({ success: true, action: 'opened' });
+            })
+            .catch((error) => {
+              console.error('Failed to toggle side panel:', error);
+              sendResponse({ success: false, error: error.message });
+            });
+        }
+      };
+
+      if (toggleTabId) {
+        handleToggle(toggleTabId);
+        return true;
+      } else {
+        chrome.tabs.query({ active: true, currentWindow: true })
+          .then(tabs => {
+            if (tabs[0]?.id) {
+              handleToggle(tabs[0].id);
+            } else {
+              throw new Error('No active tab found');
+            }
+          })
+          .catch((error) => {
+            console.error('Failed to toggle side panel:', error);
+            sendResponse({ success: false, error: error.message });
+          });
+        return true;
+      }
+      break;
+
+    case 'getSidePanelState':
+      const stateTabId = sender.tab?.id;
+      if (stateTabId) {
+        const isOpen = sidePanelState.get(stateTabId) || false;
+        sendResponse({ success: true, isOpen });
+      } else {
+        chrome.tabs.query({ active: true, currentWindow: true })
+          .then(tabs => {
+            if (tabs[0]?.id) {
+              const isOpen = sidePanelState.get(tabs[0].id) || false;
+              sendResponse({ success: true, isOpen });
+            } else {
+              sendResponse({ success: false, error: 'No active tab found' });
+            }
+          });
+        return true;
+      }
+      break;
+
+    case 'sidePanelClosed':
+      const closedTabId = sender.tab?.id;
+      if (closedTabId) {
+        sidePanelState.set(closedTabId, false);
+        console.log('Side panel closed for tab:', closedTabId);
+      }
+      sendResponse({ success: true });
+      break;
     
     default:
       console.log('Unknown action:', request.action);
   }
   
   sendResponse({ success: true });
+});
+
+// Clean up state when tabs are closed
+chrome.tabs.onRemoved.addListener((tabId) => {
+  sidePanelState.delete(tabId);
 });
