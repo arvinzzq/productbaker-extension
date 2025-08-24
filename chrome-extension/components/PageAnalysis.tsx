@@ -2,64 +2,7 @@ import React, { useState, useEffect } from "react"
 import { Button } from "./ui/button"
 import { Badge } from "./ui/badge"
 import { BarChart3 } from "lucide-react"
-
-interface PageAnalysis {
-  // 基础SEO信息
-  title: string
-  titleLength: number
-  description: string
-  descriptionLength: number
-  keywords: string
-  url: string
-  canonical: string
-  
-  // 域名信息
-  domain: string
-  domainCreationDate: string | null
-  domainExpiryDate: string | null
-  
-  // 技术配置
-  favicon: boolean
-  ssrCheck: boolean
-  robotsTag: string
-  xRobotsTag: string
-  robotsTxt: boolean
-  sitemap: boolean
-  
-  // 工具检测
-  googleAnalytics: boolean
-  googleAdsense: boolean
-  
-  // 页面基础信息
-  wordCount: number
-  language: string
-  
-  // 结构化标签
-  headings: {
-    h1: number
-    h2: number
-    h3: number
-    h4: number
-    h5: number
-    h6: number
-  }
-  
-  // 图片和链接
-  images: {
-    total: number
-    unique: number
-    withoutAlt: number
-    withoutTitle: number
-  }
-  links: {
-    total: number
-    unique: number
-    internal: number
-    external: number
-    dofollow: number
-    nofollow: number
-  }
-}
+import { SEOAnalysisEngine, type SEOAnalysis } from "../lib/seoAnalysisEngine"
 
 interface PageAnalysisComponentProps {
   autoAnalyze?: boolean
@@ -68,189 +11,14 @@ interface PageAnalysisComponentProps {
 export const PageAnalysisComponent: React.FC<PageAnalysisComponentProps> = ({ 
   autoAnalyze = false 
 }) => {
-  const [pageAnalysis, setPageAnalysis] = useState<PageAnalysis | null>(null)
+  const [pageAnalysis, setPageAnalysis] = useState<SEOAnalysis | null>(null)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
-
-  const analyzeCurrentPage = async (): Promise<PageAnalysis> => {
-    const doc = document
-    const url = window.location.href
-    const urlObj = new URL(url)
-    
-    // 基础SEO信息
-    const title = doc.title || 'N/A'
-    const titleLength = title !== 'N/A' ? title.length : 0
-    const description = doc.querySelector('meta[name="description"]')?.getAttribute('content') || 'N/A'
-    const descriptionLength = description !== 'N/A' ? description.length : 0
-    const keywords = doc.querySelector('meta[name="keywords"]')?.getAttribute('content') || 'N/A'
-    const canonical = doc.querySelector('link[rel="canonical"]')?.getAttribute('href') || url
-    
-    // 域名信息 - 简化版本，实际域名注册信息需要外部API
-    const domain = urlObj.hostname
-    const domainCreationDate = null // 需要WHOIS API
-    const domainExpiryDate = null // 需要WHOIS API
-    
-    // 技术配置检测
-    const favicon = !!doc.querySelector('link[rel*="icon"]')
-    const ssrCheck = detectSSR()
-    const robotsTag = doc.querySelector('meta[name="robots"]')?.getAttribute('content') || 'Missing'
-    const xRobotsTag = 'Missing' // HTTP header需要服务器端检测
-    
-    // 工具检测
-    const googleAnalytics = detectGoogleAnalytics()
-    const googleAdsense = detectGoogleAdsense()
-    
-    // 页面语言
-    const language = doc.documentElement.lang || doc.querySelector('meta[http-equiv="content-language"]')?.getAttribute('content') || 'N/A'
-    
-    // Headings analysis
-    const headings = {
-      h1: doc.querySelectorAll('h1').length,
-      h2: doc.querySelectorAll('h2').length,
-      h3: doc.querySelectorAll('h3').length,
-      h4: doc.querySelectorAll('h4').length,
-      h5: doc.querySelectorAll('h5').length,
-      h6: doc.querySelectorAll('h6').length,
-    }
-    
-    // Images analysis
-    const allImages = doc.querySelectorAll('img')
-    const uniqueSrcs = new Set(Array.from(allImages).map(img => img.src))
-    const imagesWithoutAlt = Array.from(allImages).filter(img => !img.alt || img.alt.trim() === '')
-    const imagesWithoutTitle = Array.from(allImages).filter(img => !img.title || img.title.trim() === '')
-    
-    const images = {
-      total: allImages.length,
-      unique: uniqueSrcs.size,
-      withoutAlt: imagesWithoutAlt.length,
-      withoutTitle: imagesWithoutTitle.length,
-    }
-    
-    // Links analysis
-    const allLinks = doc.querySelectorAll('a[href]')
-    const currentDomain = new URL(url).hostname
-    const uniqueHrefs = new Set()
-    let internal = 0, external = 0, dofollow = 0, nofollow = 0
-    
-    Array.from(allLinks).forEach(link => {
-      const href = link.getAttribute('href')
-      if (href) {
-        uniqueHrefs.add(href)
-        
-        try {
-          const linkUrl = new URL(href, url)
-          if (linkUrl.hostname === currentDomain) {
-            internal++
-          } else {
-            external++
-          }
-        } catch {
-          internal++ // relative links are internal
-        }
-        
-        const rel = link.getAttribute('rel')
-        if (rel && rel.includes('nofollow')) {
-          nofollow++
-        } else {
-          dofollow++
-        }
-      }
-    })
-    
-    const links = {
-      total: allLinks.length,
-      unique: uniqueHrefs.size,
-      internal,
-      external,
-      dofollow,
-      nofollow,
-    }
-    
-    // Word count (approximate)
-    const textContent = doc.body.innerText || ''
-    const wordCount = textContent.trim().split(/\s+/).filter(word => word.length > 0).length
-    
-    // Check for robots.txt and sitemap
-    let robotsTxt = false
-    let sitemap = false
-    
-    try {
-      const robotsResponse = await fetch(`${new URL(url).origin}/robots.txt`, { method: 'HEAD' })
-      robotsTxt = robotsResponse.ok
-    } catch {}
-    
-    try {
-      const sitemapResponse = await fetch(`${new URL(url).origin}/sitemap.xml`, { method: 'HEAD' })
-      sitemap = sitemapResponse.ok
-    } catch {}
-    
-    return {
-      // 基础SEO信息
-      title,
-      titleLength,
-      description,
-      descriptionLength,
-      keywords,
-      url,
-      canonical,
-      
-      // 域名信息
-      domain,
-      domainCreationDate,
-      domainExpiryDate,
-      
-      // 技术配置
-      favicon,
-      ssrCheck,
-      robotsTag,
-      xRobotsTag,
-      robotsTxt,
-      sitemap,
-      
-      // 工具检测
-      googleAnalytics,
-      googleAdsense,
-      
-      // 页面基础信息
-      wordCount,
-      language,
-      
-      // 结构化标签
-      headings,
-      
-      // 图片和链接
-      images,
-      links,
-    }
-  }
-
-  // 检测函数
-  const detectSSR = (): boolean => {
-    // 检测是否为服务端渲染
-    return !!document.querySelector('script[type="application/ld+json"]') || 
-           !!document.querySelector('meta[name="generator"]') ||
-           document.documentElement.innerHTML.includes('__NEXT_DATA__') ||
-           document.documentElement.innerHTML.includes('__NUXT__')
-  }
-
-  const detectGoogleAnalytics = (): boolean => {
-    return !!(window as any).gtag || 
-           !!(window as any).ga || 
-           !!(window as any).dataLayer ||
-           !!document.querySelector('script[src*="google-analytics"]') ||
-           !!document.querySelector('script[src*="gtag/js"]') ||
-           !!document.querySelector('script[src*="googletagmanager"]')
-  }
-
-  const detectGoogleAdsense = (): boolean => {
-    return !!document.querySelector('script[src*="googlesyndication"]') ||
-           !!document.querySelector('ins[class*="adsbygoogle"]') ||
-           !!document.querySelector('script[async][src*="pagead2.googlesyndication.com"]')
-  }
+  const analysisEngine = SEOAnalysisEngine.getInstance()
 
   const handleAnalyzePage = async () => {
     setIsAnalyzing(true)
     try {
-      const analysis = await analyzeCurrentPage()
+      const analysis = await analysisEngine.analyzeCurrentPage()
       setPageAnalysis(analysis)
     } catch (error) {
       console.error('Error analyzing page:', error)
@@ -412,18 +180,6 @@ export const PageAnalysisComponent: React.FC<PageAnalysisComponentProps> = ({
                 <span className="text-sm font-medium text-slate-600">Domain</span>
                 <span className="text-sm font-bold text-slate-900 font-mono">{pageAnalysis.domain}</span>
               </div>
-              <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-                <span className="text-sm font-medium text-slate-600">Creation Date</span>
-                <span className="text-sm font-medium text-slate-600">
-                  {pageAnalysis.domainCreationDate || 'Unknown'}
-                </span>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-                <span className="text-sm font-medium text-slate-600">Expiry Date</span>
-                <span className="text-sm font-medium text-slate-600">
-                  {pageAnalysis.domainExpiryDate || 'Unknown'}
-                </span>
-              </div>
             </div>
           </div>
 
@@ -436,9 +192,22 @@ export const PageAnalysisComponent: React.FC<PageAnalysisComponentProps> = ({
             <div className="grid grid-cols-2 gap-3">
               <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                 <span className="text-sm font-medium text-slate-600">Favicon</span>
-                <Badge className={`text-xs font-medium ${pageAnalysis.favicon ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200'}`}>
-                  {pageAnalysis.favicon ? 'Found' : 'Missing'}
-                </Badge>
+                <div className="flex items-center gap-2">
+                  {pageAnalysis.favicon && pageAnalysis.faviconUrl && (
+                    <img 
+                      src={pageAnalysis.faviconUrl} 
+                      alt="Favicon"
+                      className="w-4 h-4"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement
+                        target.style.display = 'none'
+                      }}
+                    />
+                  )}
+                  <Badge className={`text-xs font-medium ${pageAnalysis.favicon ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200'}`}>
+                    {pageAnalysis.favicon ? 'Found' : 'Missing'}
+                  </Badge>
+                </div>
               </div>
               <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                 <span className="text-sm font-medium text-slate-600">SSR Check</span>
@@ -514,6 +283,52 @@ export const PageAnalysisComponent: React.FC<PageAnalysisComponentProps> = ({
                 <span className="text-sm font-medium text-slate-600">Language</span>
                 <span className="text-sm font-bold text-slate-900">{pageAnalysis.language}</span>
               </div>
+            </div>
+          </div>
+
+          {/* SEO Issues Section */}
+          <div className="bg-white border border-slate-200/50 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
+            <h4 className="font-semibold text-slate-800 text-base mb-4 flex items-center gap-2">
+              <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+              SEO Issues Analysis
+            </h4>
+            <div className="space-y-3">
+              {pageAnalysis.seoIssues.map((issue, index) => (
+                <div 
+                  key={index}
+                  className={`p-4 rounded-lg border ${
+                    issue.type === 'success' ? 'bg-green-50 border-green-200' :
+                    issue.type === 'warning' ? 'bg-blue-50 border-blue-200' :
+                    'bg-red-50 border-red-200'
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center text-white text-sm font-bold ${
+                      issue.type === 'success' ? 'bg-green-500' :
+                      issue.type === 'warning' ? 'bg-blue-500' :
+                      'bg-red-500'
+                    }`}>
+                      {issue.icon}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className={`font-semibold text-sm mb-1 ${
+                        issue.type === 'success' ? 'text-green-800' :
+                        issue.type === 'warning' ? 'text-blue-800' :
+                        'text-red-800'
+                      }`}>
+                        {issue.title}
+                      </div>
+                      <div className={`text-sm leading-relaxed ${
+                        issue.type === 'success' ? 'text-green-700' :
+                        issue.type === 'warning' ? 'text-blue-700' :
+                        'text-red-700'
+                      }`}>
+                        {issue.description}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 

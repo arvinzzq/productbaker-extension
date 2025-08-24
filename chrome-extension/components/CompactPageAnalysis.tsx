@@ -1,225 +1,19 @@
-import React, { useState, useEffect } from "react"
+import React, { useEffect } from "react"
 import { Badge } from "./ui/badge"
-
-interface PageAnalysis {
-  title: string
-  titleLength: number
-  description: string
-  descriptionLength: number
-  keywords: string
-  url: string
-  canonical: string
-  domain: string
-  domainCreationDate: string | null
-  domainExpiryDate: string | null
-  favicon: boolean
-  ssrCheck: boolean
-  robotsTag: string
-  xRobotsTag: string
-  robotsTxt: boolean
-  sitemap: boolean
-  googleAnalytics: boolean
-  googleAdsense: boolean
-  wordCount: number
-  language: string
-  headings: {
-    h1: number
-    h2: number
-    h3: number
-    h4: number
-    h5: number
-    h6: number
-  }
-  images: {
-    total: number
-    unique: number
-    withoutAlt: number
-    withoutTitle: number
-  }
-  links: {
-    total: number
-    unique: number
-    internal: number
-    external: number
-    dofollow: number
-    nofollow: number
-  }
-}
+import { useSEOAnalysis } from "../hooks/useSEOAnalysis"
 
 interface CompactPageAnalysisProps {
   autoAnalyze?: boolean
 }
 
 export const CompactPageAnalysis: React.FC<CompactPageAnalysisProps> = ({ autoAnalyze = false }) => {
-  const [pageAnalysis, setPageAnalysis] = useState<PageAnalysis | null>(null)
-  const [isAnalyzing, setIsAnalyzing] = useState(false)
-
-  const analyzeCurrentPage = async (): Promise<PageAnalysis> => {
-    const doc = document
-    const url = window.location.href
-    const urlObj = new URL(url)
-    
-    // 基础SEO信息
-    const title = doc.title || 'N/A'
-    const titleLength = title !== 'N/A' ? title.length : 0
-    const description = doc.querySelector('meta[name="description"]')?.getAttribute('content') || 'N/A'
-    const descriptionLength = description !== 'N/A' ? description.length : 0
-    const keywords = doc.querySelector('meta[name="keywords"]')?.getAttribute('content') || 'N/A'
-    const canonical = doc.querySelector('link[rel="canonical"]')?.getAttribute('href') || url
-    
-    const domain = urlObj.hostname
-    const domainCreationDate = null
-    const domainExpiryDate = null
-    
-    const favicon = !!doc.querySelector('link[rel*="icon"]')
-    const ssrCheck = detectSSR()
-    const robotsTag = doc.querySelector('meta[name="robots"]')?.getAttribute('content') || 'Missing'
-    const xRobotsTag = 'Missing'
-    
-    const googleAnalytics = detectGoogleAnalytics()
-    const googleAdsense = detectGoogleAdsense()
-    const language = doc.documentElement.lang || 'N/A'
-    
-    const headings = {
-      h1: doc.querySelectorAll('h1').length,
-      h2: doc.querySelectorAll('h2').length,
-      h3: doc.querySelectorAll('h3').length,
-      h4: doc.querySelectorAll('h4').length,
-      h5: doc.querySelectorAll('h5').length,
-      h6: doc.querySelectorAll('h6').length,
-    }
-    
-    const allImages = doc.querySelectorAll('img')
-    const uniqueSrcs = new Set(Array.from(allImages).map(img => img.src))
-    const imagesWithoutAlt = Array.from(allImages).filter(img => !img.alt || img.alt.trim() === '')
-    const imagesWithoutTitle = Array.from(allImages).filter(img => !img.title || img.title.trim() === '')
-    
-    const images = {
-      total: allImages.length,
-      unique: uniqueSrcs.size,
-      withoutAlt: imagesWithoutAlt.length,
-      withoutTitle: imagesWithoutTitle.length,
-    }
-    
-    const allLinks = doc.querySelectorAll('a[href]')
-    const currentDomain = new URL(url).hostname
-    const uniqueHrefs = new Set()
-    let internal = 0, external = 0, dofollow = 0, nofollow = 0
-    
-    Array.from(allLinks).forEach(link => {
-      const href = link.getAttribute('href')
-      if (href) {
-        uniqueHrefs.add(href)
-        try {
-          const linkUrl = new URL(href, url)
-          if (linkUrl.hostname === currentDomain) {
-            internal++
-          } else {
-            external++
-          }
-        } catch {
-          internal++
-        }
-        const rel = link.getAttribute('rel')
-        if (rel && rel.includes('nofollow')) {
-          nofollow++
-        } else {
-          dofollow++
-        }
-      }
-    })
-    
-    const links = {
-      total: allLinks.length,
-      unique: uniqueHrefs.size,
-      internal,
-      external,
-      dofollow,
-      nofollow,
-    }
-    
-    const textContent = doc.body.innerText || ''
-    const wordCount = textContent.trim().split(/\s+/).filter(word => word.length > 0).length
-    
-    let robotsTxt = false
-    let sitemap = false
-    
-    try {
-      const robotsResponse = await fetch(`${new URL(url).origin}/robots.txt`, { method: 'HEAD' })
-      robotsTxt = robotsResponse.ok
-    } catch {}
-    
-    try {
-      const sitemapResponse = await fetch(`${new URL(url).origin}/sitemap.xml`, { method: 'HEAD' })
-      sitemap = sitemapResponse.ok
-    } catch {}
-    
-    return {
-      title,
-      titleLength,
-      description,
-      descriptionLength,
-      keywords,
-      url,
-      canonical,
-      domain,
-      domainCreationDate,
-      domainExpiryDate,
-      favicon,
-      ssrCheck,
-      robotsTag,
-      xRobotsTag,
-      robotsTxt,
-      sitemap,
-      googleAnalytics,
-      googleAdsense,
-      wordCount,
-      language,
-      headings,
-      images,
-      links,
-    }
-  }
-
-  const detectSSR = (): boolean => {
-    return !!document.querySelector('script[type="application/ld+json"]') || 
-           !!document.querySelector('meta[name="generator"]') ||
-           document.documentElement.innerHTML.includes('__NEXT_DATA__') ||
-           document.documentElement.innerHTML.includes('__NUXT__')
-  }
-
-  const detectGoogleAnalytics = (): boolean => {
-    return !!(window as any).gtag || 
-           !!(window as any).ga || 
-           !!(window as any).dataLayer ||
-           !!document.querySelector('script[src*="google-analytics"]') ||
-           !!document.querySelector('script[src*="gtag/js"]') ||
-           !!document.querySelector('script[src*="googletagmanager"]')
-  }
-
-  const detectGoogleAdsense = (): boolean => {
-    return !!document.querySelector('script[src*="googlesyndication"]') ||
-           !!document.querySelector('ins[class*="adsbygoogle"]') ||
-           !!document.querySelector('script[async][src*="pagead2.googlesyndication.com"]')
-  }
-
-  const handleAnalyzePage = async () => {
-    setIsAnalyzing(true)
-    try {
-      const analysis = await analyzeCurrentPage()
-      setPageAnalysis(analysis)
-    } catch (error) {
-      console.error('Error analyzing page:', error)
-    } finally {
-      setIsAnalyzing(false)
-    }
-  }
+  const { analysis: pageAnalysis, isAnalyzing, analyzeCurrentPage } = useSEOAnalysis()
 
   useEffect(() => {
-    if (autoAnalyze) {
-      handleAnalyzePage()
+    if (autoAnalyze && !pageAnalysis && !isAnalyzing) {
+      analyzeCurrentPage()
     }
-  }, [autoAnalyze])
+  }, [autoAnalyze, pageAnalysis, isAnalyzing, analyzeCurrentPage])
 
   if (isAnalyzing) {
     return (
@@ -239,152 +33,329 @@ export const CompactPageAnalysis: React.FC<CompactPageAnalysisProps> = ({ autoAn
   }
 
   return (
-    <div className="bg-gray-50 text-sm overflow-y-auto p-4">
-      {/* Title */}
-      <div className="bg-white border border-gray-200 rounded-lg mb-3 p-4">
-        <div className="flex items-center justify-between mb-2">
-          <span className="font-medium text-gray-700 text-sm">Title</span>
-          <div className={`px-2 py-1 rounded text-xs font-medium ${pageAnalysis.titleLength > 60 ? 'bg-red-50 text-red-600' : pageAnalysis.titleLength < 30 ? 'bg-amber-50 text-amber-600' : 'bg-green-50 text-green-600'}`}>
-            {pageAnalysis.titleLength}/60
+    <div className="bg-white text-sm overflow-y-auto">
+      <div className="p-4 space-y-4">
+        {/* Title Section */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-2 h-4 bg-blue-500 rounded-sm"></div>
+            <span className="font-medium text-gray-800">Title</span>
+            <Badge 
+              variant="outline" 
+              className={`ml-auto text-xs ${
+                pageAnalysis.titleLength >= 30 && pageAnalysis.titleLength <= 60 
+                  ? 'bg-green-50 text-green-700 border-green-200' 
+                  : 'bg-orange-50 text-orange-700 border-orange-200'
+              }`}
+            >
+              {pageAnalysis.titleLength}/60
+            </Badge>
+          </div>
+          <div className="text-gray-700 text-sm leading-relaxed pl-4">
+            {pageAnalysis.title}
           </div>
         </div>
-        <div className="text-gray-800 text-sm leading-relaxed">
-          {pageAnalysis.title}
-        </div>
-      </div>
 
-      {/* Description */}
-      <div className="bg-white border border-gray-200 rounded-lg mb-3 p-4">
-        <div className="flex items-center justify-between mb-2">
-          <span className="font-medium text-gray-700 text-sm">Description</span>
-          <div className={`px-2 py-1 rounded text-xs font-medium ${pageAnalysis.descriptionLength > 160 ? 'bg-red-50 text-red-600' : pageAnalysis.descriptionLength === 0 ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'}`}>
-            {pageAnalysis.descriptionLength}/160
+        {/* Description Section */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-2 h-4 bg-blue-500 rounded-sm"></div>
+            <span className="font-medium text-gray-800">Description</span>
+            <Badge 
+              variant="outline" 
+              className={`ml-auto text-xs ${
+                pageAnalysis.descriptionLength > 0 && pageAnalysis.descriptionLength <= 160
+                  ? 'bg-orange-50 text-orange-700 border-orange-200' 
+                  : 'bg-red-50 text-red-700 border-red-200'
+              }`}
+            >
+              {pageAnalysis.descriptionLength}/160
+            </Badge>
+          </div>
+          <div className="text-gray-700 text-sm leading-relaxed pl-4">
+            {pageAnalysis.description === 'N/A' ? (
+              <span className="text-gray-500 italic">No description found</span>
+            ) : pageAnalysis.description}
           </div>
         </div>
-        <div className="text-gray-800 text-sm leading-relaxed">
-          {pageAnalysis.description === 'N/A' ? (
-            <span className="text-amber-600 font-medium">Missing</span>
-          ) : pageAnalysis.description}
-        </div>
-      </div>
 
-      {/* Keywords */}
-      <div className="bg-white border border-gray-200 rounded-lg mb-3 p-4">
-        <div className="flex items-center justify-between mb-2">
-          <span className="font-medium text-gray-700 text-sm">Keywords</span>
-          <div className={`px-2 py-1 rounded text-xs font-medium ${pageAnalysis.keywords === 'N/A' ? 'bg-amber-50 text-amber-600' : 'bg-green-50 text-green-600'}`}>
-            {pageAnalysis.keywords === 'N/A' ? 'Missing' : 'Found'}
+        {/* Keywords Section */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-2 h-4 bg-blue-500 rounded-sm"></div>
+            <span className="font-medium text-gray-800">Keywords</span>
+          </div>
+          <div className="text-gray-700 text-sm leading-relaxed pl-4">
+            {pageAnalysis.keywords === 'N/A' ? 'N/A' : pageAnalysis.keywords}
           </div>
         </div>
-        <div className="text-gray-800 text-sm leading-relaxed">
-          {pageAnalysis.keywords}
-        </div>
-      </div>
 
-      {/* Technical Overview */}
-      <div className="bg-white border border-gray-200 rounded-lg mb-3 p-4">
-        <div className="flex items-center justify-between mb-3">
-          <span className="font-medium text-gray-700 text-sm">Technical</span>
-        </div>
-        <div className="grid grid-cols-2 gap-3 text-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-gray-600">Favicon</span>
-            <div className={`w-2 h-2 rounded-full ${pageAnalysis.favicon ? 'bg-green-500' : 'bg-red-500'}`}></div>
+        {/* URL Section */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-2 h-4 bg-blue-500 rounded-sm"></div>
+            <span className="font-medium text-gray-800">Url</span>
           </div>
-          <div className="flex items-center justify-between">
-            <span className="text-gray-600">SSR</span>
-            <div className={`w-2 h-2 rounded-full ${pageAnalysis.ssrCheck ? 'bg-green-500' : 'bg-gray-300'}`}></div>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-gray-600">robots.txt</span>
-            <div className={`w-2 h-2 rounded-full ${pageAnalysis.robotsTxt ? 'bg-green-500' : 'bg-red-500'}`}></div>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-gray-600">sitemap.xml</span>
-            <div className={`w-2 h-2 rounded-full ${pageAnalysis.sitemap ? 'bg-green-500' : 'bg-red-500'}`}></div>
+          <div className="text-gray-700 text-sm leading-relaxed pl-4 break-all font-mono">
+            {pageAnalysis.url}
           </div>
         </div>
-      </div>
 
-      {/* Domain & Analytics */}
-      <div className="bg-white border border-gray-200 rounded-lg mb-3 p-4">
-        <div className="mb-3">
-          <span className="font-medium text-gray-700 text-sm">Domain</span>
-          <div className="text-sm text-gray-800 mt-1">{pageAnalysis.domain}</div>
+        {/* Canonical Section */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-2 h-4 bg-blue-500 rounded-sm"></div>
+            <span className="font-medium text-gray-800">Canonical</span>
+          </div>
+          <div className="text-gray-700 text-sm leading-relaxed pl-4 break-all font-mono">
+            {pageAnalysis.canonical}
+          </div>
         </div>
-        <div className="border-t pt-3">
-          <span className="font-medium text-gray-700 text-sm mb-2 block">Analytics</span>
-          <div className="grid grid-cols-2 gap-3 text-xs">
+
+
+        {/* Technical Status Grid */}
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <div className="grid grid-cols-2 gap-4">
+            {/* Favicon */}
             <div className="flex items-center justify-between">
-              <span className="text-gray-600">Google Analytics</span>
-              <div className={`w-2 h-2 rounded-full ${pageAnalysis.googleAnalytics ? 'bg-green-500' : 'bg-gray-300'}`}></div>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-gray-600">Google AdSense</span>
-              <div className={`w-2 h-2 rounded-full ${pageAnalysis.googleAdsense ? 'bg-green-500' : 'bg-gray-300'}`}></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Content Stats */}
-      <div className="bg-white border border-gray-200 rounded-lg p-4">
-        <div className="flex items-center justify-between mb-3">
-          <span className="font-medium text-gray-700 text-sm">Content</span>
-        </div>
-        <div className="grid grid-cols-2 gap-4 mb-4">
-          <div>
-            <div className="text-lg font-semibold text-gray-800">{pageAnalysis.wordCount.toLocaleString()}</div>
-            <div className="text-xs text-gray-600">Words</div>
-          </div>
-          <div>
-            <div className="text-lg font-semibold text-gray-800">{pageAnalysis.language || 'N/A'}</div>
-            <div className="text-xs text-gray-600">Language</div>
-          </div>
-        </div>
-        
-        {/* Headings */}
-        <div className="border-t pt-4 mb-4">
-          <div className="text-xs text-gray-600 mb-2">Headings</div>
-          <div className="grid grid-cols-6 gap-2">
-            {Object.entries(pageAnalysis.headings).map(([tag, count]) => (
-              <div key={tag} className="text-center">
-                <div className={`text-sm font-semibold ${count > 0 ? 'text-gray-800' : 'text-gray-400'}`}>
-                  {count}
+              <span className="text-sm text-gray-600">Favicon</span>
+              <div className="flex items-center gap-2">
+                {pageAnalysis.favicon && pageAnalysis.faviconUrl && (
+                  <img 
+                    src={pageAnalysis.faviconUrl} 
+                    alt="Favicon"
+                    className="w-4 h-4"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement
+                      target.style.display = 'none'
+                    }}
+                  />
+                )}
+                <div className={`w-8 h-6 rounded flex items-center justify-center ${pageAnalysis.favicon ? 'bg-green-100' : 'bg-gray-200'}`}>
+                  <div className={`w-2 h-2 rounded-full ${pageAnalysis.favicon ? 'bg-green-500' : 'bg-gray-400'}`}></div>
                 </div>
-                <div className="text-xs text-gray-500 uppercase">{tag}</div>
+              </div>
+            </div>
+
+            {/* SSR Check */}
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">SSR Check</span>
+              <div className={`w-8 h-6 rounded flex items-center justify-center ${pageAnalysis.ssrCheck ? 'bg-green-100' : 'bg-gray-200'}`}>
+                <div className={`w-2 h-2 rounded-full ${pageAnalysis.ssrCheck ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+              </div>
+            </div>
+          </div>
+
+          {/* Robots Tag */}
+          <div className="mt-4 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">Robots Tag</span>
+              <span className="text-sm font-medium text-gray-800">
+                {pageAnalysis.robotsTag}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">X-Robots-Tag</span>
+              <div className="flex items-center gap-2">
+                <span className={`text-sm ${pageAnalysis.xRobotsTag === 'Missing' ? 'text-orange-600' : 'text-gray-800'}`}>
+                  {pageAnalysis.xRobotsTag}
+                </span>
+                {pageAnalysis.xRobotsTag === 'Missing' && (
+                  <div className="w-4 h-4 rounded-full bg-orange-100 flex items-center justify-center">
+                    <div className="text-orange-600 text-xs">!</div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Files Status */}
+          <div className="mt-4 grid grid-cols-2 gap-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">robots.txt</span>
+              <div className="flex items-center gap-2">
+                <span className={`text-sm font-medium ${pageAnalysis.robotsTxt ? 'text-green-600' : 'text-gray-600'}`}>
+                  {pageAnalysis.robotsTxt ? 'Available' : 'N/A'}
+                </span>
+                <div className={`w-4 h-4 rounded-full flex items-center justify-center ${pageAnalysis.robotsTxt ? 'bg-green-100' : 'bg-gray-200'}`}>
+                  <div className={`text-xs ${pageAnalysis.robotsTxt ? 'text-green-600' : 'text-gray-400'}`}>
+                    {pageAnalysis.robotsTxt ? '✓' : '✗'}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">sitemap.xml</span>
+              <div className="flex items-center gap-2">
+                <span className={`text-sm font-medium ${pageAnalysis.sitemap ? 'text-green-600' : 'text-gray-600'}`}>
+                  {pageAnalysis.sitemap ? 'Available' : 'N/A'}
+                </span>
+                <div className={`w-4 h-4 rounded-full flex items-center justify-center ${pageAnalysis.sitemap ? 'bg-green-100' : 'bg-gray-200'}`}>
+                  <div className={`text-xs ${pageAnalysis.sitemap ? 'text-green-600' : 'text-gray-400'}`}>
+                    {pageAnalysis.sitemap ? '✓' : '✗'}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Analytics Tools Section */}
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">Google Analytics</span>
+              <div className="flex items-center gap-2">
+                <span className={`text-sm ${pageAnalysis.googleAnalytics ? 'text-green-600' : 'text-orange-600'}`}>
+                  {pageAnalysis.googleAnalytics ? 'Detected' : 'Missing'}
+                </span>
+                {!pageAnalysis.googleAnalytics && (
+                  <div className="w-4 h-4 rounded-full bg-orange-100 flex items-center justify-center">
+                    <div className="text-orange-600 text-xs">!</div>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">Google AdSense</span>
+              <div className="flex items-center gap-2">
+                <span className={`text-sm ${pageAnalysis.googleAdsense ? 'text-green-600' : 'text-orange-600'}`}>
+                  {pageAnalysis.googleAdsense ? 'Detected' : 'Missing'}
+                </span>
+                {!pageAnalysis.googleAdsense && (
+                  <div className="w-4 h-4 rounded-full bg-orange-100 flex items-center justify-center">
+                    <div className="text-orange-600 text-xs">!</div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Page Statistics */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between py-2 border-b border-gray-100">
+            <span className="text-sm text-gray-600">Word Count</span>
+            <span className="text-sm font-medium text-gray-800">
+              {pageAnalysis.wordCount.toLocaleString()}
+            </span>
+          </div>
+          <div className="flex items-center justify-between py-2 border-b border-gray-100">
+            <span className="text-sm text-gray-600">Lang</span>
+            <span className="text-sm font-medium text-gray-800">
+              {pageAnalysis.language || 'N/A'}
+            </span>
+          </div>
+        </div>
+
+        {/* Headings Statistics */}
+        <div className="space-y-3">
+          <div className="text-sm font-medium text-gray-700">Heading Structure</div>
+          <div className="text-sm text-gray-600">
+            {Object.entries(pageAnalysis.headings)
+              .filter(([, count]) => count > 0)
+              .map(([tag, count]) => `${tag.toUpperCase()}=${count}`)
+              .join(', ') || 'No headings found'}
+          </div>
+        </div>
+
+        {/* SEO Issues Section */}
+        <div className="space-y-3">
+          <div className="text-sm font-medium text-gray-700 mb-3">SEO Issues</div>
+          <div className="space-y-2">
+            {pageAnalysis.seoIssues.map((issue, index) => (
+              <div 
+                key={index}
+                className={`p-3 rounded-lg border ${
+                  issue.type === 'success' ? 'bg-green-50 border-green-200' :
+                  issue.type === 'warning' ? 'bg-blue-50 border-blue-200' :
+                  'bg-red-50 border-red-200'
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center text-white text-sm font-bold ${
+                    issue.type === 'success' ? 'bg-green-500' :
+                    issue.type === 'warning' ? 'bg-blue-500' :
+                    'bg-red-500'
+                  }`}>
+                    {issue.icon}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className={`font-medium text-sm ${
+                      issue.type === 'success' ? 'text-green-800' :
+                      issue.type === 'warning' ? 'text-blue-800' :
+                      'text-red-800'
+                    }`}>
+                      {issue.title}
+                    </div>
+                    <div className={`text-xs mt-1 leading-relaxed ${
+                      issue.type === 'success' ? 'text-green-700' :
+                      issue.type === 'warning' ? 'text-blue-700' :
+                      'text-red-700'
+                    }`}>
+                      {issue.description}
+                    </div>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
         </div>
-        
-        {/* Images & Links */}
-        <div className="border-t pt-4 grid grid-cols-2 gap-4">
-          <div>
-            <div className="text-xs text-gray-600 mb-2">Images</div>
-            <div className="space-y-1">
-              <div className="flex justify-between text-xs">
-                <span className="text-gray-600">Total</span>
-                <span className="font-medium">{pageAnalysis.images.total}</span>
+
+        {/* Images & Links Summary */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <div className="text-sm font-medium text-gray-700">Images</div>
+            <div className="space-y-1 text-xs text-gray-600">
+              <div className="flex justify-between">
+                <span>Total Images</span>
+                <span className="font-medium text-gray-800">{pageAnalysis.images.total}</span>
               </div>
-              <div className="flex justify-between text-xs">
-                <span className="text-gray-600">No Alt</span>
+              <div className="flex justify-between">
+                <span>Unique Images</span>
+                <span className="font-medium text-gray-800">{pageAnalysis.images.unique}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Without Alt</span>
                 <span className={`font-medium ${pageAnalysis.images.withoutAlt > 0 ? 'text-red-600' : 'text-green-600'}`}>
                   {pageAnalysis.images.withoutAlt}
                 </span>
               </div>
+              <div className="flex justify-between">
+                <span>Without Title</span>
+                <span className={`font-medium ${pageAnalysis.images.withoutTitle > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                  {pageAnalysis.images.withoutTitle}
+                </span>
+              </div>
             </div>
           </div>
-          <div>
-            <div className="text-xs text-gray-600 mb-2">Links</div>
-            <div className="space-y-1">
-              <div className="flex justify-between text-xs">
-                <span className="text-gray-600">Total</span>
-                <span className="font-medium">{pageAnalysis.links.total}</span>
+
+          <div className="space-y-2">
+            <div className="text-sm font-medium text-gray-700">Links</div>
+            <div className="space-y-1 text-xs text-gray-600">
+              <div className="flex justify-between">
+                <span>Total Links</span>
+                <span className="font-medium text-gray-800">{pageAnalysis.links.total}</span>
               </div>
-              <div className="flex justify-between text-xs">
-                <span className="text-gray-600">External</span>
-                <span className="font-medium">{pageAnalysis.links.external}</span>
+              <div className="flex justify-between">
+                <span>Unique</span>
+                <span className="font-medium text-gray-800">{pageAnalysis.links.unique}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Internal</span>
+                <span className="font-medium text-gray-800">{pageAnalysis.links.internal}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>External</span>
+                <span className="font-medium text-gray-800">{pageAnalysis.links.external}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Dofollow</span>
+                <span className="font-medium text-gray-800">{pageAnalysis.links.dofollow}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Nofollow</span>
+                <span className="font-medium text-gray-800">{pageAnalysis.links.nofollow}</span>
               </div>
             </div>
           </div>

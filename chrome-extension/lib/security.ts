@@ -329,7 +329,7 @@ class SecurityManager {
         background: #ff4444;
         color: white;
         padding: 10px;
-        z-index: 1000000;
+        z-index: 9999999999999;
         text-align: center;
         font-weight: bold;
       `;

@@ -3,7 +3,6 @@ import {
   Drawer,
   DrawerClose,
   DrawerContent,
-  DrawerDescription,
   DrawerHeader,
   DrawerTitle,
 } from "../components/ui/drawer"
@@ -11,9 +10,9 @@ import { CompactPageAnalysis } from "../components/CompactPageAnalysis"
 import { TabNavigation } from "../components/TabNavigation"
 import { SEOIssues } from "../components/SEOIssues"
 import { KeywordDensity } from "../components/KeywordDensity"
+import { SEOAnalysisProvider } from "../hooks/useSEOAnalysis"
 import { BarChart3, FileText, Search, Globe, Image, Link, Hash } from "lucide-react"
 
-import iconUrl from "data-url:../assets/icon.png"
 import styleText from "data-text:../globals.css"
 
 export const config = {
@@ -111,7 +110,7 @@ const DrawerFloatingPanel: React.FC = () => {
   const renderTabContent = () => {
     switch (activeTab) {
       case 'overview':
-        return <CompactPageAnalysis autoAnalyze={isOpen && activeTab === 'overview'} />
+        return <CompactPageAnalysis autoAnalyze={isOpen} />
       case 'issues':
         return <SEOIssues autoAnalyze={isOpen && activeTab === 'issues'} />
       case 'density':
@@ -176,44 +175,44 @@ const DrawerFloatingPanel: React.FC = () => {
   }
 
   return (
-    <Drawer open={isOpen} onOpenChange={setIsOpen}>
-      <DrawerContent side="right">
-        {/* Header with close button */}
-        <DrawerHeader className="bg-white text-gray-800 px-4 py-3 flex-shrink-0 border-b border-gray-200 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <img 
-                src={iconUrl} 
-                alt="ProductBaker" 
-                className="w-5 h-5"
-              />
-              <DrawerTitle className="text-primary text-sm font-medium">
-                ProductBaker
-              </DrawerTitle>
+    <SEOAnalysisProvider>
+      <Drawer open={isOpen} onOpenChange={setIsOpen}>
+        <DrawerContent side="right">
+          {/* Header with close button */}
+          <DrawerHeader className="bg-white text-gray-800 px-4 py-3 flex-shrink-0 border-b border-gray-200 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-5 h-5 bg-green-600 rounded text-white text-xs flex items-center justify-center font-bold">
+                  P
+                </div>
+                <DrawerTitle className="text-primary text-sm font-medium">
+                  ProductBaker
+                </DrawerTitle>
+              </div>
+              <DrawerClose 
+                className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors w-6 h-6 flex items-center justify-center text-lg cursor-pointer rounded"
+              >
+                ×
+              </DrawerClose>
             </div>
-            <DrawerClose 
-              className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors w-6 h-6 flex items-center justify-center text-lg cursor-pointer rounded"
-            >
-              ×
-            </DrawerClose>
-          </div>
-        </DrawerHeader>
+          </DrawerHeader>
 
-        {/* Main content with sidebar navigation */}
-        <div className="flex flex-1 min-h-0">
-          <TabNavigation 
-            tabs={tabs}
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-          />
-          
-          {/* Tab content area */}
-          <div className="flex-1 min-h-0 overflow-y-auto">
-            {renderTabContent()}
+          {/* Main content with sidebar navigation */}
+          <div className="flex flex-1 min-h-0">
+            <TabNavigation 
+              tabs={tabs}
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+            />
+            
+            {/* Tab content area */}
+            <div className="flex-1 min-h-0 overflow-y-auto">
+              {renderTabContent()}
+            </div>
           </div>
-        </div>
-      </DrawerContent>
-    </Drawer>
+        </DrawerContent>
+      </Drawer>
+    </SEOAnalysisProvider>
   )
 }
 
