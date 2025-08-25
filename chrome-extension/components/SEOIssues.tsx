@@ -286,43 +286,45 @@ export const SEOIssues: React.FC<SEOIssuesProps> = ({ autoAnalyze = false }) => 
 
   if (isAnalyzing) {
     return (
-      <div className="bg-gradient-to-br from-slate-50/50 to-white">
-        <div className="p-6">
-          <div className="text-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Analyzing SEO issues...</p>
-          </div>
+      <div className="bg-gradient-to-br from-slate-50/30 to-white">
+        <div className="p-4 text-center">
+          <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-green-600"></div>
+          <p className="text-sm text-slate-600 mt-2">Analyzing SEO issues...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="bg-gradient-to-br from-slate-50/50 to-white">
-      <div className="p-6 space-y-6">
-        {/* Header with summary */}
-        <div className="border-b border-slate-200/60 pb-4">
-          <h3 className="text-xl font-bold text-slate-800 tracking-tight">SEO Issues</h3>
-          <p className="text-sm text-slate-500 mt-1">Identify and fix SEO problems on your page</p>
-          {issues.length > 0 && (
-            <div className="flex items-center gap-2 mt-3">
-              {errorCount > 0 && (
-                <Badge className="bg-red-100 text-red-800 border border-red-200">
-                  {errorCount} Errors
-                </Badge>
-              )}
-              {warningCount > 0 && (
-                <Badge className="bg-yellow-100 text-yellow-800 border border-yellow-200">
-                  {warningCount} Warnings
-                </Badge>
-              )}
-              {infoCount > 0 && (
-                <Badge className="bg-blue-100 text-blue-800 border border-blue-200">
-                  {infoCount} Info
-                </Badge>
-              )}
-            </div>
-          )}
+    <div className="bg-gradient-to-br from-slate-50/30 to-white">
+      <div className="p-4 space-y-4">
+        {/* Summary Card */}
+        <div className="card-elevated bg-white rounded-lg">
+          <div className="p-4 space-y-4">
+            <h3 className="font-medium text-slate-900 text-sm">SEO Issues Summary</h3>
+            {issues.length > 0 && (
+              <div className="grid grid-cols-3 gap-3">
+                <div className="text-center p-3 bg-slate-50 rounded-lg">
+                  <div className={`text-lg font-bold ${errorCount > 0 ? 'text-red-600' : 'text-slate-400'}`}>
+                    {errorCount}
+                  </div>
+                  <div className="text-xs text-slate-600">Errors</div>
+                </div>
+                <div className="text-center p-3 bg-slate-50 rounded-lg">
+                  <div className={`text-lg font-bold ${warningCount > 0 ? 'text-yellow-600' : 'text-slate-400'}`}>
+                    {warningCount}
+                  </div>
+                  <div className="text-xs text-slate-600">Warnings</div>
+                </div>
+                <div className="text-center p-3 bg-slate-50 rounded-lg">
+                  <div className={`text-lg font-bold ${infoCount > 0 ? 'text-green-600' : 'text-slate-400'}`}>
+                    {infoCount}
+                  </div>
+                  <div className="text-xs text-slate-600">Passed</div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {issues.length === 0 ? (
@@ -332,25 +334,27 @@ export const SEOIssues: React.FC<SEOIssuesProps> = ({ autoAnalyze = false }) => 
           <p className="text-gray-600">Click to start SEO analysis of this page.</p>
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-4">
           {Object.entries(groupedIssues).map(([category, categoryIssues]) => (
-            <div key={category} className="space-y-3">
-              <h4 className="font-medium text-gray-800 pb-2 border-b">
-                {category} ({categoryIssues.length})
-              </h4>
+            <div key={category} className="card-elevated bg-white rounded-lg">
+              <div className="px-4 py-3 bg-slate-50 border-b">
+                <h4 className="font-medium text-slate-900 text-sm">
+                  {category} ({categoryIssues.length})
+                </h4>
+              </div>
               
-              <div className="space-y-3">
+              <div className="p-4 space-y-3">
                 {categoryIssues.map((issue) => (
                   <div
                     key={issue.id}
-                    className={`border rounded-lg p-4 ${getIssueColor(issue.type)}`}
+                    className={`border rounded-lg p-3 ${getIssueColor(issue.type)}`}
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-start gap-3 flex-1">
                         {getIssueIcon(issue.type)}
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            <h5 className="font-medium text-gray-900">
+                            <h5 className="font-medium text-slate-900 text-sm">
                               {issue.title}
                             </h5>
                             {issue.count && (
@@ -359,7 +363,7 @@ export const SEOIssues: React.FC<SEOIssuesProps> = ({ autoAnalyze = false }) => 
                               </Badge>
                             )}
                           </div>
-                          <p className="text-sm text-gray-700">
+                          <p className="text-sm text-slate-700">
                             {issue.description}
                           </p>
                         </div>

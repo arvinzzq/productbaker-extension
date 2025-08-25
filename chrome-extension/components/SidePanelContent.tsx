@@ -86,6 +86,20 @@ export function SidePanelContent() {
     }
   };
 
+  // Listen for close messages from drawer
+  React.useEffect(() => {
+    const handleMessage = (message: any) => {
+      if (message.action === 'closeSidePanelFromDrawer') {
+        handleClosePanel();
+      }
+    };
+
+    chrome.runtime.onMessage.addListener(handleMessage);
+    return () => {
+      chrome.runtime.onMessage.removeListener(handleMessage);
+    };
+  }, []);
+
   if (showSettings) {
     return (
       <div className="h-full flex flex-col">

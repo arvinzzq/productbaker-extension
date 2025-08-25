@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react"
+import { Archive, TrendingUp, BarChart3, Link, Zap, Shield, CheckCircle, Smartphone, Gauge, Lock } from "lucide-react"
 
 interface SEOToolsProps {
   autoAnalyze?: boolean
@@ -18,7 +19,7 @@ export const SEOTools: React.FC<SEOToolsProps> = ({ autoAnalyze = false }) => {
   const seoTools = [
     {
       name: 'Archive',
-      icon: '🏛️',
+      icon: <Archive className="w-5 h-5" />,
       description: 'View historical snapshots of this website',
       url: `https://web.archive.org/web/*/${currentUrl}`,
       color: 'bg-blue-50 border-blue-200 hover:bg-blue-100',
@@ -26,7 +27,7 @@ export const SEOTools: React.FC<SEOToolsProps> = ({ autoAnalyze = false }) => {
     },
     {
       name: 'Similarweb',
-      icon: '🔍',
+      icon: <TrendingUp className="w-5 h-5" />,
       description: 'Analyze website traffic and competitor insights',
       url: `https://www.similarweb.com/website/${domain}/`,
       color: 'bg-green-50 border-green-200 hover:bg-green-100',
@@ -34,7 +35,7 @@ export const SEOTools: React.FC<SEOToolsProps> = ({ autoAnalyze = false }) => {
     },
     {
       name: 'Semrush',
-      icon: '📊',
+      icon: <BarChart3 className="w-5 h-5" />,
       description: 'SEO analysis and keyword research',
       url: `https://www.semrush.com/analytics/overview/?q=${domain}`,
       color: 'bg-orange-50 border-orange-200 hover:bg-orange-100',
@@ -42,7 +43,7 @@ export const SEOTools: React.FC<SEOToolsProps> = ({ autoAnalyze = false }) => {
     },
     {
       name: 'Ahrefs',
-      icon: '📈',
+      icon: <Link className="w-5 h-5" />,
       description: 'Backlink analysis and SEO metrics',
       url: `https://ahrefs.com/site-explorer/overview/v2/exact?target=${domain}`,
       color: 'bg-purple-50 border-purple-200 hover:bg-purple-100',
@@ -50,11 +51,19 @@ export const SEOTools: React.FC<SEOToolsProps> = ({ autoAnalyze = false }) => {
     },
     {
       name: 'PageSpeed',
-      icon: '⚡',
+      icon: <Zap className="w-5 h-5" />,
       description: 'Google PageSpeed Insights performance analysis',
       url: `https://pagespeed.web.dev/analysis?url=${encodeURIComponent(currentUrl)}`,
       color: 'bg-red-50 border-red-200 hover:bg-red-100',
       textColor: 'text-red-700'
+    },
+    {
+      name: 'Cloudflare Radar',
+      icon: <Shield className="w-5 h-5" />,
+      description: 'Domain security and performance analysis',
+      url: `https://radar.cloudflare.com/scan/${domain}`,
+      color: 'bg-cyan-50 border-cyan-200 hover:bg-cyan-100',
+      textColor: 'text-cyan-700'
     }
   ]
 
@@ -106,7 +115,7 @@ export const SEOTools: React.FC<SEOToolsProps> = ({ autoAnalyze = false }) => {
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="text-2xl">{tool.icon}</div>
+                    <div className={tool.textColor}>{tool.icon}</div>
                     <div>
                       <h4 className="font-medium text-sm">{tool.name}</h4>
                       <p className="text-xs text-slate-600 mt-1">{tool.description}</p>
@@ -134,7 +143,7 @@ export const SEOTools: React.FC<SEOToolsProps> = ({ autoAnalyze = false }) => {
                 className="flex items-center justify-between p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors"
               >
                 <div className="flex items-center gap-2">
-                  <span className="text-lg">✅</span>
+                  <CheckCircle className="w-4 h-4 text-green-600" />
                   <span className="text-sm font-medium text-slate-900">HTML Validator</span>
                 </div>
                 <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -147,7 +156,7 @@ export const SEOTools: React.FC<SEOToolsProps> = ({ autoAnalyze = false }) => {
                 className="flex items-center justify-between p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors"
               >
                 <div className="flex items-center gap-2">
-                  <span className="text-lg">📱</span>
+                  <Smartphone className="w-4 h-4 text-blue-600" />
                   <span className="text-sm font-medium text-slate-900">Mobile-Friendly Test</span>
                 </div>
                 <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -160,7 +169,7 @@ export const SEOTools: React.FC<SEOToolsProps> = ({ autoAnalyze = false }) => {
                 className="flex items-center justify-between p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors"
               >
                 <div className="flex items-center gap-2">
-                  <span className="text-lg">🚀</span>
+                  <Gauge className="w-4 h-4 text-orange-600" />
                   <span className="text-sm font-medium text-slate-900">PageSpeed Insights</span>
                 </div>
                 <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -173,7 +182,7 @@ export const SEOTools: React.FC<SEOToolsProps> = ({ autoAnalyze = false }) => {
                 className="flex items-center justify-between p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors"
               >
                 <div className="flex items-center gap-2">
-                  <span className="text-lg">🔒</span>
+                  <Lock className="w-4 h-4 text-purple-600" />
                   <span className="text-sm font-medium text-slate-900">SSL Test</span>
                 </div>
                 <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -190,24 +199,28 @@ export const SEOTools: React.FC<SEOToolsProps> = ({ autoAnalyze = false }) => {
             <h4 className="font-medium text-slate-900 text-sm">SEO Tools Guide</h4>
             <div className="space-y-2 text-sm text-slate-600">
               <div className="flex items-start gap-2">
-                <div className="w-4 h-4 text-green-500 mt-0.5">💡</div>
+                <CheckCircle className="w-4 h-4 text-green-500 mt-0.5" />
                 <p><strong>Archive:</strong> Check website history and broken link recovery</p>
               </div>
               <div className="flex items-start gap-2">
-                <div className="w-4 h-4 text-green-500 mt-0.5">💡</div>
+                <CheckCircle className="w-4 h-4 text-green-500 mt-0.5" />
                 <p><strong>Similarweb:</strong> Analyze traffic trends and competitor insights</p>
               </div>
               <div className="flex items-start gap-2">
-                <div className="w-4 h-4 text-green-500 mt-0.5">💡</div>
+                <CheckCircle className="w-4 h-4 text-green-500 mt-0.5" />
                 <p><strong>Semrush:</strong> Keyword research and SEO opportunity analysis</p>
               </div>
               <div className="flex items-start gap-2">
-                <div className="w-4 h-4 text-green-500 mt-0.5">💡</div>
+                <CheckCircle className="w-4 h-4 text-green-500 mt-0.5" />
                 <p><strong>Ahrefs:</strong> Comprehensive backlink profile analysis</p>
               </div>
               <div className="flex items-start gap-2">
-                <div className="w-4 h-4 text-green-500 mt-0.5">💡</div>
+                <CheckCircle className="w-4 h-4 text-green-500 mt-0.5" />
                 <p><strong>PageSpeed:</strong> Performance optimization recommendations</p>
+              </div>
+              <div className="flex items-start gap-2">
+                <CheckCircle className="w-4 h-4 text-green-500 mt-0.5" />
+                <p><strong>Cloudflare Radar:</strong> Domain security threats and performance insights</p>
               </div>
             </div>
           </div>

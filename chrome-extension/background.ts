@@ -94,12 +94,30 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         if (isOpen) {
           // Since there's no direct close API, we'll mark as closed and let the UI handle it
           sidePanelState.set(targetTabId, false);
+          
+          // Notify all content scripts about the state change
+          chrome.tabs.sendMessage(targetTabId, { 
+            type: 'SIDE_PANEL_STATE_CHANGED', 
+            isOpen: false 
+          }).catch(() => {
+            // Ignore errors if content script is not available
+          });
+          
           sendResponse({ success: true, action: 'closed', shouldClose: true });
         } else {
           // Open the side panel
           chrome.sidePanel.open({ tabId: targetTabId })
             .then(() => {
               sidePanelState.set(targetTabId, true);
+              
+              // Notify all content scripts about the state change
+              chrome.tabs.sendMessage(targetTabId, { 
+                type: 'SIDE_PANEL_STATE_CHANGED', 
+                isOpen: true 
+              }).catch(() => {
+                // Ignore errors if content script is not available
+              });
+              
               sendResponse({ success: true, action: 'opened' });
             })
             .catch((error) => {
@@ -149,10 +167,42 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       break;
 
     case 'sidePanelClosed':
-      const closedTabId = sender.tab?.id;
-      if (closedTabId) {
-        sidePanelState.set(closedTabId, false);
-        console.log('Side panel closed for tab:', closedTabId);
+      // Side panel was closed via the X button
+      // Since side panel doesn't have direct tab context, we need to get the active tab
+      chrome.tabs.query({ active: true, currentWindow: true })
+        .then(tabs => {
+          if (tabs[0]?.id) {
+            const tabId = tabs[0].id;
+            sidePanelState.set(tabId, false);
+            console.log('Side panel closed for tab:', tabId);
+            
+            // Notify the content script about the state change
+            chrome.tabs.sendMessage(tabId, { 
+              type: 'SIDE_PANEL_STATE_CHANGED', 
+              isOpen: false 
+            }).catch((error) => {
+              console.log('Content script not available for tab:', tabId, error);
+            });
+            
+            sendResponse({ success: true });
+          } else {
+            console.error('No active tab found when side panel was closed');
+            sendResponse({ success: false, error: 'No active tab found' });
+          }
+        })
+        .catch(error => {
+          console.error('Failed to get active tab when side panel was closed:', error);
+          sendResponse({ success: false, error: error.message });
+        });
+      return true; // Keep the message channel open for async response
+      break;
+
+    case 'closeSidePanelFromDrawer':
+      // This message comes from the drawer requesting to close the side panel
+      const drawerTabId = sender.tab?.id;
+      if (drawerTabId) {
+        sidePanelState.set(drawerTabId, false);
+        console.log('Side panel close requested from drawer for tab:', drawerTabId);
       }
       sendResponse({ success: true });
       break;

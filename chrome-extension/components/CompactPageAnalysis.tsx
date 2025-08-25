@@ -42,6 +42,16 @@ export const CompactPageAnalysis: React.FC<CompactPageAnalysisProps> = ({ autoAn
     <div className="bg-gradient-to-br from-slate-50/30 to-white">
       <div className="p-4 space-y-4">
         
+        {/* Domain Section */}
+        <div className="card-elevated bg-white rounded-lg">
+          <div className="p-4">
+            <h3 className="font-medium text-slate-900 text-sm mb-2">Domain</h3>
+            <p className="text-lg font-mono text-slate-800 break-all">
+              {new URL(pageAnalysis.url).hostname}
+            </p>
+          </div>
+        </div>
+
         {/* Primary Information Section */}
         <div className="card-elevated bg-white rounded-lg">
           <div className="p-4 space-y-4">

@@ -17,7 +17,7 @@ import { SocialAnalysis } from "../components/SocialAnalysis"
 import { SERPAnalysis } from "../components/SERPAnalysis"
 import { SEOTools } from "../components/SEOTools"
 import { SEOAnalysisProvider } from "../hooks/useSEOAnalysis"
-import { BarChart3, FileText, Search, Globe, Image, Link, Hash, Wrench } from "lucide-react"
+import { BarChart3, FileText, Search, Globe, Image, Link, Hash, Wrench, TrendingUp } from "lucide-react"
 
 import styleText from "data-text:../globals.css"
 import iconUrl from "data-base64:../assets/icon.png"
@@ -43,26 +43,25 @@ const DrawerFloatingPanel: React.FC = () => {
 
   const toggleSidePanel = async () => {
     try {
-      if (!isSidePanelOpen) {
-        // 打开 side panel
-        const response = await chrome.runtime.sendMessage({ action: 'openSidePanel' })
-        if (response?.success) {
+      const response = await chrome.runtime.sendMessage({ action: 'toggleSidePanel' })
+      if (response?.success) {
+        if (response.action === 'opened') {
           setIsSidePanelOpen(true)
+        } else if (response.action === 'closed' && response.shouldClose) {
+          setIsSidePanelOpen(false)
+          // Notify the side panel to close itself
+          chrome.runtime.sendMessage({ action: 'closeSidePanelFromDrawer' })
         }
-      } else {
-        // 关闭 side panel (目前Chrome API没有直接关闭方法，但我们可以更新状态)
-        setIsSidePanelOpen(false)
-        // 注意：Chrome side panel 没有程序化关闭API，用户需要手动关闭
-        console.log('Side panel toggle - user needs to manually close side panel')
       }
     } catch (error) {
       console.error('Failed to toggle side panel:', error)
     }
   }
+
   
   const tabs = [
     { id: 'overview', label: 'Overview', icon: <BarChart3 className="w-3 h-3" /> },
-    { id: 'traffic', label: 'Traffic', icon: <BarChart3 className="w-3 h-3" /> },
+    { id: 'traffic', label: 'Traffic', icon: <TrendingUp className="w-3 h-3" /> },
     { id: 'issues', label: 'Issues', icon: <FileText className="w-3 h-3" /> },
     { id: 'keyword', label: 'Keyword', icon: <Hash className="w-3 h-3" /> },
     { id: 'serp', label: 'SERP', icon: <Search className="w-3 h-3" /> },
@@ -90,6 +89,9 @@ const DrawerFloatingPanel: React.FC = () => {
         })
       } else if (message.type === 'HIDE_FLOATING_PANEL') {
         setIsOpen(false)
+      } else if (message.type === 'SIDE_PANEL_STATE_CHANGED') {
+        console.log('Side panel state changed:', message.isOpen);
+        setIsSidePanelOpen(message.isOpen)
       }
     }
 
@@ -121,6 +123,15 @@ const DrawerFloatingPanel: React.FC = () => {
       console.log('ProductBaker content script loaded');
     }
     
+    // Get initial side panel state
+    chrome.runtime.sendMessage({ action: 'getSidePanelState' })
+      .then(response => {
+        if (response?.success) {
+          setIsSidePanelOpen(response.isOpen)
+        }
+      })
+      .catch(error => console.error('Failed to get initial side panel state:', error))
+    
     return () => {
       // 清理事件监听器
       if (typeof chrome !== 'undefined' && chrome.runtime?.onMessage) {
@@ -145,10 +156,21 @@ const DrawerFloatingPanel: React.FC = () => {
         return <KeywordDensity autoAnalyze={isOpen && activeTab === 'keyword'} />
       case 'traffic':
         return (
-          <div className="bg-gradient-to-br from-slate-50/50 to-white">
-            <div className="p-6">
-              <h3 className="text-xl font-bold text-slate-800 tracking-tight mb-4">Traffic Analysis</h3>
-              <p className="text-slate-600">Traffic analysis features coming soon...</p>
+          <div className="bg-gradient-to-br from-slate-50/30 to-white h-full">
+            <div className="p-4 h-full">
+              <div className="card-elevated bg-white rounded-lg h-full overflow-hidden">
+                <div className="px-4 py-3 bg-slate-50 border-b">
+                  <h3 className="font-medium text-slate-900 text-sm">Traffic Analysis</h3>
+                </div>
+                <div className="h-full">
+                  <iframe 
+                    src="https://productbaker.com/"
+                    className="w-full h-full border-0"
+                    title="ProductBaker Traffic Analysis"
+                    sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
+                  />
+                </div>
+              </div>
             </div>
           </div>
         )
