@@ -62,7 +62,7 @@ const DrawerFloatingPanel: React.FC = () => {
   const tabs = [
     { id: 'overview', label: 'Overview', icon: <BarChart3 className="w-3 h-3" /> },
     { id: 'traffic', label: 'Traffic', icon: <TrendingUp className="w-3 h-3" /> },
-    { id: 'issues', label: 'Issues', icon: <FileText className="w-3 h-3" /> },
+    { id: 'report', label: 'Report', icon: <FileText className="w-3 h-3" /> },
     { id: 'keyword', label: 'Keyword', icon: <Hash className="w-3 h-3" /> },
     { id: 'serp', label: 'SERP', icon: <Search className="w-3 h-3" /> },
     { id: 'headings', label: 'Headings', icon: <FileText className="w-3 h-3" /> },
@@ -90,7 +90,7 @@ const DrawerFloatingPanel: React.FC = () => {
       } else if (message.type === 'HIDE_FLOATING_PANEL') {
         setIsOpen(false)
       } else if (message.type === 'SIDE_PANEL_STATE_CHANGED') {
-        console.log('Side panel state changed:', message.isOpen);
+        console.log('Side panel state changed:', message.isOpen, 'previous state:', isSidePanelOpen);
         setIsSidePanelOpen(message.isOpen)
       }
     }
@@ -150,8 +150,8 @@ const DrawerFloatingPanel: React.FC = () => {
     switch (activeTab) {
       case 'overview':
         return <CompactPageAnalysis autoAnalyze={isOpen} onTabChange={setActiveTab} />
-      case 'issues':
-        return <SEOIssues autoAnalyze={isOpen && activeTab === 'issues'} />
+      case 'report':
+        return <SEOIssues autoAnalyze={isOpen && activeTab === 'report'} />
       case 'keyword':
         return <KeywordDensity autoAnalyze={isOpen && activeTab === 'keyword'} />
       case 'traffic':
@@ -211,19 +211,24 @@ const DrawerFloatingPanel: React.FC = () => {
               <div className="flex items-center gap-2">
                 <button 
                   onClick={toggleSidePanel}
-                  className={`transition-all duration-300 w-6 h-6 flex items-center justify-center text-lg cursor-pointer rounded-md shadow-sm transform hover:scale-110 ${
+                  className={`transition-all duration-300 px-3 py-1.5 flex items-center justify-center gap-1.5 cursor-pointer rounded-lg font-medium text-sm transform hover:scale-105 ${
                     isSidePanelOpen 
-                      ? 'text-green-600 bg-green-50 hover:bg-green-100 shadow-md ring-1 ring-green-200' 
-                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100 hover:shadow-md'
+                      ? 'text-white bg-green-600 hover:bg-green-700 shadow-lg ring-2 ring-green-200' 
+                      : 'text-gray-700 bg-white hover:bg-green-50 hover:text-green-700 shadow-md border border-gray-200 hover:border-green-300'
                   }`}
-                  title={isSidePanelOpen ? "Side Panel Open" : "Toggle Side Panel"}
+                  title={isSidePanelOpen ? "Close Side Panel" : "Open Side Panel"}
                   style={{
-                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
+                    boxShadow: isSidePanelOpen 
+                      ? '0 4px 12px rgba(34, 197, 94, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)' 
+                      : '0 2px 6px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.4)'
                   }}
                 >
                   <svg className="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                   </svg>
+                  <span className="text-xs">
+                    {isSidePanelOpen ? 'Close' : 'Panel'}
+                  </span>
                 </button>
                 <DrawerClose 
                   className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-all duration-300 w-6 h-6 flex items-center justify-center text-lg cursor-pointer rounded-md shadow-sm transform hover:scale-110 hover:shadow-md"

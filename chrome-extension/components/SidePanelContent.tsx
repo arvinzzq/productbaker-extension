@@ -79,10 +79,14 @@ export function SidePanelContent() {
     try {
       // Notify background script that panel is being closed
       await chrome.runtime.sendMessage({ action: 'sidePanelClosed' });
+      // Add a small delay to ensure message is processed
+      await new Promise(resolve => setTimeout(resolve, 100));
       // Try to close the window
       window.close();
     } catch (error) {
       console.error('Failed to close side panel:', error);
+      // Try to close anyway if message fails
+      window.close();
     }
   };
 
@@ -94,9 +98,21 @@ export function SidePanelContent() {
       }
     };
 
+    // Handle window beforeunload as backup
+    const handleBeforeUnload = () => {
+      try {
+        chrome.runtime.sendMessage({ action: 'sidePanelClosed' });
+      } catch (error) {
+        console.error('Failed to send close message on unload:', error);
+      }
+    };
+
     chrome.runtime.onMessage.addListener(handleMessage);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    
     return () => {
       chrome.runtime.onMessage.removeListener(handleMessage);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, []);
 
@@ -177,7 +193,7 @@ export function SidePanelContent() {
 
       {/* Tabs Navigation and Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-        <div className="px-3 sm:px-4 pt-2 border-b elevated-surface">
+        <div className="px-3 sm:px-4 py-2 border-b elevated-surface">
           <TabsList className="w-full professional-card">
             <TabsTrigger value="products" className="flex-1">
               <Package className="h-4 w-4 mr-2" />
@@ -198,7 +214,7 @@ export function SidePanelContent() {
               onClick={handleAddProduct}
               size="sm"
               variant="floating"
-              className="w-full text-xs sm:text-sm interactive-lift premium-glow mb-2"
+              className="w-full text-xs sm:text-sm interactive-lift premium-glow mb-2 text-white font-semibold"
             >
               <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
               {t('addProduct')}
@@ -251,7 +267,7 @@ export function SidePanelContent() {
                 <p className="text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-4 px-2">
                   {t('noProductsDesc')}
                 </p>
-                <Button onClick={handleAddProduct} size="sm" variant="floating" className="text-xs sm:text-sm interactive-lift premium-glow">
+                <Button onClick={handleAddProduct} size="sm" variant="floating" className="text-xs sm:text-sm interactive-lift premium-glow text-white font-semibold">
                   <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                   {t('addProduct')}
                 </Button>
@@ -282,7 +298,7 @@ export function SidePanelContent() {
               <p className="text-xs sm:text-sm text-muted-foreground mb-4 leading-relaxed">
                 Analyze keyword trends with Google Trends. Create groups of keywords and compare their popularity over time.
               </p>
-              <Button onClick={handleShowKeywordTrends} size="sm" variant="floating" className="interactive-lift">
+              <Button onClick={handleShowKeywordTrends} size="sm" variant="floating" className="interactive-lift text-white font-semibold">
                 <TrendingUp className="h-4 w-4 mr-2" />
                 Start Analysis
               </Button>

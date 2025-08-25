@@ -180,11 +180,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             chrome.tabs.sendMessage(tabId, { 
               type: 'SIDE_PANEL_STATE_CHANGED', 
               isOpen: false 
+            }).then(() => {
+              console.log('Successfully notified content script about side panel closure');
+              sendResponse({ success: true });
             }).catch((error) => {
               console.log('Content script not available for tab:', tabId, error);
+              // Still send success response even if content script is not available
+              sendResponse({ success: true });
             });
-            
-            sendResponse({ success: true });
           } else {
             console.error('No active tab found when side panel was closed');
             sendResponse({ success: false, error: 'No active tab found' });

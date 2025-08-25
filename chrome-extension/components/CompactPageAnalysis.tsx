@@ -2,6 +2,7 @@ import React, { useEffect } from "react"
 import { Badge } from "./ui/badge"
 import { StatusBadge } from "./ui/status-badge"
 import { useSEOAnalysis } from "../hooks/useSEOAnalysis"
+import { Globe } from "lucide-react"
 
 interface CompactPageAnalysisProps {
   autoAnalyze?: boolean
@@ -43,10 +44,13 @@ export const CompactPageAnalysis: React.FC<CompactPageAnalysisProps> = ({ autoAn
       <div className="p-4 space-y-4">
         
         {/* Domain Section */}
-        <div className="card-elevated bg-white rounded-lg">
+        <div className="card-elevated bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
           <div className="p-4">
-            <h3 className="font-medium text-slate-900 text-sm mb-2">Domain</h3>
-            <p className="text-lg font-mono text-slate-800 break-all">
+            <h3 className="font-semibold text-green-800 text-sm mb-3 flex items-center gap-2">
+              <Globe className="w-4 h-4" />
+              Domain
+            </h3>
+            <p className="text-xl font-semibold text-green-900 break-all tracking-wide">
               {new URL(pageAnalysis.url).hostname}
             </p>
           </div>
