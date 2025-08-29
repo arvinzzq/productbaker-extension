@@ -22,6 +22,8 @@ module.exports = {
         "slide-out-to-bottom": "slideOutToBottom 150ms ease",
         "slide-out-to-left": "slideOutToLeft 150ms ease",
         "slide-out-to-right": "slideOutToRight 150ms ease",
+        "spin": "spin 1s linear infinite",
+        "bounce": "bounce 1s infinite",
       },
       keyframes: {
         fadeIn: {
@@ -63,6 +65,20 @@ module.exports = {
         slideOutToRight: {
           from: { transform: "translateX(0)" },
           to: { transform: "translateX(100%)" },
+        },
+        spin: {
+          from: { transform: "rotate(0deg)" },
+          to: { transform: "rotate(360deg)" },
+        },
+        bounce: {
+          "0%, 100%": {
+            transform: "translateY(-25%)",
+            animationTimingFunction: "cubic-bezier(0.8, 0, 1, 1)",
+          },
+          "50%": {
+            transform: "translateY(0)",
+            animationTimingFunction: "cubic-bezier(0, 0, 0.2, 1)",
+          },
         },
       },
       colors: {

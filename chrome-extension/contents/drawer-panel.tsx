@@ -30,6 +30,7 @@ const DrawerFloatingPanel: React.FC = () => {
   const [currentUrl, setCurrentUrl] = useState('')
   const [iframeError, setIframeError] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [iframeKey, setIframeKey] = useState(0)
 
   const toggleSidePanel = async () => {
     try {
@@ -48,6 +49,24 @@ const DrawerFloatingPanel: React.FC = () => {
     }
   }
 
+  useEffect(() => {
+    let loadingTimer: NodeJS.Timeout | null = null;
+    
+    // Set loading timeout
+    if (isOpen && isLoading) {
+      loadingTimer = setTimeout(() => {
+        console.log('Loading timeout reached, hiding loading state');
+        setIsLoading(false);
+        // Don't set error if content might have loaded
+      }, 2000); // 2 seconds timeout - faster
+    }
+    
+    return () => {
+      if (loadingTimer) {
+        clearTimeout(loadingTimer);
+      }
+    };
+  }, [isOpen, isLoading]);
   
   useEffect(() => {
     // 确保初始状态为关闭
@@ -65,6 +84,12 @@ const DrawerFloatingPanel: React.FC = () => {
         setIsOpen(prev => {
           const newState = !prev
           console.log('Drawer state changing from', prev, 'to', newState);
+          if (newState) {
+            // Reset loading state when opening
+            setIsLoading(true);
+            setIframeError(false);
+            setIframeKey(prevKey => prevKey + 1);
+          }
           return newState
         })
       } else if (message.type === 'HIDE_FLOATING_PANEL') {
@@ -178,17 +203,43 @@ const DrawerFloatingPanel: React.FC = () => {
 
         {/* Main content with iframe */}
         <div className="flex-1 overflow-hidden relative">
+          <iframe 
+            key={iframeKey}
+            src={`https://productbaker.com/extension/seo-analysis?url=${encodeURIComponent(currentUrl)}&t=${Date.now()}`}
+            className="w-full h-full border-0"
+            title="ProductBaker SEO Analysis"
+            sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-top-navigation"
+            referrerPolicy="no-referrer-when-downgrade"
+            onLoad={() => {
+              console.log('Iframe loaded successfully');
+              setIsLoading(false);
+              setIframeError(false);
+            }}
+            onError={() => {
+              console.error('Iframe load error');
+              setIsLoading(false);
+              setIframeError(true);
+            }}
+            style={{
+              colorScheme: 'light'
+            }}
+          />
+          
           {isLoading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-white/80 z-10">
-              <div className="flex flex-col items-center gap-2">
-                <div className="w-6 h-6 border-2 border-green-600 border-t-transparent rounded-full animate-spin"></div>
+            <div className="absolute inset-0 flex items-center justify-center bg-white/90 z-10">
+              <div className="flex flex-col items-center gap-3">
+                <div className="flex space-x-1">
+                  <div className="w-3 h-3 bg-green-600 rounded-full animate-bounce"></div>
+                  <div className="w-3 h-3 bg-green-600 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                  <div className="w-3 h-3 bg-green-600 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                </div>
                 <span className="text-sm text-gray-600">Loading...</span>
               </div>
             </div>
           )}
           
-          {iframeError ? (
-            <div className="flex-1 flex items-center justify-center p-6">
+          {iframeError && (
+            <div className="absolute inset-0 flex items-center justify-center bg-white z-20">
               <div className="text-center">
                 <div className="w-12 h-12 mx-auto mb-4 text-gray-400">
                   <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -196,11 +247,12 @@ const DrawerFloatingPanel: React.FC = () => {
                   </svg>
                 </div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">Loading Error</h3>
-                <p className="text-gray-600 mb-4">Unable to load content from productbaker.com</p>
+                <p className="text-gray-600 mb-4">Unable to load content</p>
                 <button 
                   onClick={() => {
-                    setIframeError(false)
-                    setIsLoading(true)
+                    setIframeError(false);
+                    setIsLoading(true);
+                    setIframeKey(prevKey => prevKey + 1);
                   }}
                   className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                 >
@@ -208,25 +260,6 @@ const DrawerFloatingPanel: React.FC = () => {
                 </button>
               </div>
             </div>
-          ) : (
-            <iframe 
-              src={`https://productbaker.com/extension/seo-analysis?url=${encodeURIComponent(currentUrl)}&t=${Date.now()}`}
-              className="w-full h-full border-0"
-              title="ProductBaker SEO Analysis"
-              sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-top-navigation"
-              referrerPolicy="no-referrer-when-downgrade"
-              onLoad={() => {
-                setIsLoading(false)
-                setIframeError(false)
-              }}
-              onError={() => {
-                setIsLoading(false)
-                setIframeError(true)
-              }}
-              style={{
-                colorScheme: 'light'
-              }}
-            />
           )}
         </div>
       </DrawerContent>
