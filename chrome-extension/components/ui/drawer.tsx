@@ -47,7 +47,7 @@ export const DrawerContent = React.forwardRef<HTMLDivElement, DrawerContentProps
           className
         )}
         style={{
-          width: "540px", // 固定宽度，等同于 w-96
+          width: "600px", // 固定宽度，等同于 w-96
           transform: side === "right" 
             ? open ? "translateX(0)" : "translateX(100%)"
             : open ? "translateX(0)" : "translateX(-100%)",
