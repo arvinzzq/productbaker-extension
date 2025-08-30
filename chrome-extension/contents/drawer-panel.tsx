@@ -31,6 +31,7 @@ const DrawerFloatingPanel: React.FC = () => {
   const [iframeError, setIframeError] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [iframeKey, setIframeKey] = useState(0)
+  const [iframeInitialized, setIframeInitialized] = useState(false)
 
   // Function to collect current page data
   const getPageData = () => {
@@ -43,8 +44,29 @@ const DrawerFloatingPanel: React.FC = () => {
     return pageData;
   }
 
-  // Expose method to window for iframe to call
-  (window as any).getProductBakerPageData = getPageData;
+  // Listen for messages from iframe
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      // Verify origin for security
+      if (event.origin !== 'https://productbaker.com') {
+        return;
+      }
+
+      // When iframe is ready, send page data
+      if (event.data.type === 'IFRAME_READY') {
+        console.log('Iframe is ready, sending page data');
+        const pageData = getPageData();
+        (event.source as Window)?.postMessage(pageData, event.origin);
+        console.log('Page data sent to iframe:', pageData);
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    
+    return () => {
+      window.removeEventListener('message', handleMessage);
+    };
+  }, []);
 
   const toggleSidePanel = async () => {
     try {
@@ -87,8 +109,10 @@ const DrawerFloatingPanel: React.FC = () => {
     setIsOpen(false);
     console.log('Content script initialized, drawer state reset to closed');
     
-    // Get current page URL
-    setCurrentUrl(window.location.href);
+    // Get current page URL only once
+    if (!currentUrl) {
+      setCurrentUrl(window.location.href);
+    }
     
     // Listen for messages from background script
     const handleMessage = (message: any) => {
@@ -99,10 +123,13 @@ const DrawerFloatingPanel: React.FC = () => {
           const newState = !prev
           console.log('Drawer state changing from', prev, 'to', newState);
           if (newState) {
-            // Reset loading state when opening
-            setIsLoading(true);
-            setIframeError(false);
-            setIframeKey(prevKey => prevKey + 1);
+            // Only initialize iframe on first open or if there was an error
+            if (!iframeInitialized || iframeError) {
+              setIsLoading(true);
+              setIframeError(false);
+              setIframeKey(prevKey => prevKey + 1);
+              setIframeInitialized(true);
+            }
           }
           return newState
         })
@@ -160,9 +187,6 @@ const DrawerFloatingPanel: React.FC = () => {
       if (typeof window !== 'undefined' && window.removeEventListener) {
         window.removeEventListener('TOGGLE_FLOATING_PANEL', handleCustomEvent)
       }
-      
-      // 清理全局方法
-      delete (window as any).getProductBakerPageData;
     }
   }, [])
   
@@ -185,6 +209,22 @@ const DrawerFloatingPanel: React.FC = () => {
               </DrawerTitle>
             </div>
             <div className="flex items-center gap-2">
+              <button 
+                onClick={() => {
+                  setIsLoading(true);
+                  setIframeError(false);
+                  setIframeKey(prevKey => prevKey + 1);
+                }}
+                className="text-gray-600 hover:text-gray-800 hover:bg-gray-100 transition-all duration-300 w-8 h-8 flex items-center justify-center cursor-pointer rounded-md shadow-sm transform hover:scale-110 hover:shadow-md"
+                title="Refresh Analysis"
+                style={{
+                  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
+                }}
+              >
+                <svg className="w-4 h-4 transition-transform duration-200 hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+              </button>
               <button 
                 onClick={toggleSidePanel}
                 className={`transition-all duration-300 px-3 py-1.5 flex items-center justify-center gap-1.5 cursor-pointer rounded-lg font-medium text-sm transform hover:scale-105 ${
@@ -220,27 +260,29 @@ const DrawerFloatingPanel: React.FC = () => {
 
         {/* Main content with iframe */}
         <div className="flex-1 overflow-hidden relative">
-          <iframe 
-            key={iframeKey}
-            src={`https://productbaker.com/extension/seo-analysis?url=${encodeURIComponent(currentUrl)}&t=${Date.now()}`}
-            className="w-full h-full border-0"
-            title="ProductBaker SEO Analysis"
-            sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-top-navigation"
-            referrerPolicy="no-referrer-when-downgrade"
-            onLoad={() => {
-              console.log('Iframe loaded successfully');
-              setIsLoading(false);
-              setIframeError(false);
-            }}
-            onError={() => {
-              console.error('Iframe load error');
-              setIsLoading(false);
-              setIframeError(true);
-            }}
-            style={{
-              colorScheme: 'light'
-            }}
-          />
+          {iframeInitialized && (
+            <iframe 
+              key={iframeKey}
+              src={`https://productbaker.com/extension/seo-analysis?url=${encodeURIComponent(currentUrl)}&extension=true&t=${Date.now()}`}
+              className="w-full h-full border-0"
+              title="ProductBaker SEO Analysis"
+              sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-top-navigation"
+              referrerPolicy="no-referrer-when-downgrade"
+              onLoad={() => {
+                console.log('Iframe loaded successfully');
+                setIsLoading(false);
+                setIframeError(false);
+              }}
+              onError={() => {
+                console.error('Iframe load error');
+                setIsLoading(false);
+                setIframeError(true);
+              }}
+              style={{
+                colorScheme: 'light'
+              }}
+            />
+          )}
           
           {isLoading && (
             <div className="absolute inset-0 flex items-center justify-center bg-white/90 z-10">
@@ -288,6 +330,7 @@ const DrawerFloatingPanel: React.FC = () => {
                     setIframeError(false);
                     setIsLoading(true);
                     setIframeKey(prevKey => prevKey + 1);
+                    setIframeInitialized(true);
                   }}
                   className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                 >

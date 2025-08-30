@@ -213,8 +213,8 @@ export function SidePanelContent() {
             <Button 
               onClick={handleAddProduct}
               size="sm"
-              variant="floating"
-              className="w-full text-xs sm:text-sm interactive-lift premium-glow mb-2 text-white font-semibold"
+              variant="default"
+              className="w-full text-xs sm:text-sm interactive-lift mb-2 bg-green-600 hover:bg-green-700 text-white font-semibold"
             >
               <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
               {t('addProduct')}
@@ -267,7 +267,7 @@ export function SidePanelContent() {
                 <p className="text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-4 px-2">
                   {t('noProductsDesc')}
                 </p>
-                <Button onClick={handleAddProduct} size="sm" variant="floating" className="text-xs sm:text-sm interactive-lift premium-glow text-white font-semibold">
+                <Button onClick={handleAddProduct} size="sm" variant="default" className="text-xs sm:text-sm interactive-lift bg-green-600 hover:bg-green-700 text-white font-semibold">
                   <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                   {t('addProduct')}
                 </Button>
@@ -298,7 +298,7 @@ export function SidePanelContent() {
               <p className="text-xs sm:text-sm text-muted-foreground mb-4 leading-relaxed">
                 Analyze keyword trends with Google Trends. Create groups of keywords and compare their popularity over time.
               </p>
-              <Button onClick={handleShowKeywordTrends} size="sm" variant="floating" className="interactive-lift text-white font-semibold">
+              <Button onClick={handleShowKeywordTrends} size="sm" variant="default" className="interactive-lift bg-green-600 hover:bg-green-700 text-white font-semibold">
                 <TrendingUp className="h-4 w-4 mr-2" />
                 Start Analysis
               </Button>
