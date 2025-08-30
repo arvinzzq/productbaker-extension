@@ -32,6 +32,20 @@ const DrawerFloatingPanel: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [iframeKey, setIframeKey] = useState(0)
 
+  // Function to collect current page data
+  const getPageData = () => {
+    const pageData = {
+      type: 'SEO_ANALYSIS_PAGE_DATA',
+      data: {
+        htmlContent: document.documentElement.outerHTML
+      }
+    };
+    return pageData;
+  }
+
+  // Expose method to window for iframe to call
+  (window as any).getProductBakerPageData = getPageData;
+
   const toggleSidePanel = async () => {
     try {
       const response = await chrome.runtime.sendMessage({ action: 'toggleSidePanel' })
@@ -146,6 +160,9 @@ const DrawerFloatingPanel: React.FC = () => {
       if (typeof window !== 'undefined' && window.removeEventListener) {
         window.removeEventListener('TOGGLE_FLOATING_PANEL', handleCustomEvent)
       }
+      
+      // 清理全局方法
+      delete (window as any).getProductBakerPageData;
     }
   }, [])
   
@@ -229,9 +246,27 @@ const DrawerFloatingPanel: React.FC = () => {
             <div className="absolute inset-0 flex items-center justify-center bg-white/90 z-10">
               <div className="flex flex-col items-center gap-3">
                 <div className="flex space-x-1">
-                  <div className="w-3 h-3 bg-green-600 rounded-full animate-bounce"></div>
-                  <div className="w-3 h-3 bg-green-600 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                  <div className="w-3 h-3 bg-green-600 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                  <div 
+                    className="w-3 h-3 bg-green-600 rounded-full"
+                    style={{
+                      animation: 'bounce 1s infinite ease-in-out',
+                      animationDelay: '0s'
+                    }}
+                  ></div>
+                  <div 
+                    className="w-3 h-3 bg-green-600 rounded-full"
+                    style={{
+                      animation: 'bounce 1s infinite ease-in-out',
+                      animationDelay: '0.15s'
+                    }}
+                  ></div>
+                  <div 
+                    className="w-3 h-3 bg-green-600 rounded-full"
+                    style={{
+                      animation: 'bounce 1s infinite ease-in-out',
+                      animationDelay: '0.3s'
+                    }}
+                  ></div>
                 </div>
                 <span className="text-sm text-gray-600">Loading...</span>
               </div>
