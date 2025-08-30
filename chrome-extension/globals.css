@@ -315,3 +315,15 @@
 .animate-slide-out-to-right {
   animation: slide-out-to-right 0.3s ease-out;
 }
+
+/* Bounce animation for loading dots */
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(-25%);
+    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+  }
+  50% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+}
