@@ -2,7 +2,7 @@
   "name": "productbaker-extension",
   "displayName": "ProductBaker",
   "version": "1.0.0",
-  "description": "A Chrome extension for managing product information and enhancing the efficiency of external link submission.",
+  "description": "ProductBaker is a powerful browser extension that provides comprehensive website analytics and SEO insights directly in your browser. It is designed for product managers, indie makers, marketers, and SEO specialists who want instant access to actionable data.",
   "author": "ProductBaker Team",
   "scripts": {
     "dev": "plasmo dev",
