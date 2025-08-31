@@ -14,7 +14,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from './ui/tabs';
 import { Plus, Package, Link2, Settings, MoreHorizontal, TrendingUp, X } from 'lucide-react';
 
 export function SidePanelContent() {
-  const { state, getSelectedProduct } = useProducts();
+  const { state, getSelectedProduct, loadProducts } = useProducts();
   const { t } = useI18n();
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<string | null>(null);
@@ -249,7 +249,27 @@ export function SidePanelContent() {
               <div className="p-2 sm:p-4">
                 <Card className="border-destructive card-elevated">
                   <CardContent className="p-3 sm:p-4">
-                    <p className="text-xs sm:text-sm text-destructive break-words">{error}</p>
+                    <p className="text-xs sm:text-sm text-destructive break-words mb-3">{error}</p>
+                    {(error.includes('CONNECTION_CLOSED') || error.includes('network') || error.includes('fetch')) && (
+                      <div className="flex gap-2">
+                        <Button 
+                          onClick={() => window.location.reload()} 
+                          size="sm" 
+                          variant="outline"
+                          className="text-xs"
+                        >
+                          Reload Extension
+                        </Button>
+                        <Button 
+                          onClick={() => loadProducts()} 
+                          size="sm" 
+                          variant="default"
+                          className="text-xs"
+                        >
+                          Retry
+                        </Button>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </div>

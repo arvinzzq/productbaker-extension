@@ -72,7 +72,7 @@ interface ProductProviderProps {
 export function ProductProvider({ children }: ProductProviderProps) {
   const [state, dispatch] = useReducer(appReducer, initialState);
 
-  const loadProducts = useCallback(async () => {
+  const loadProducts = useCallback(async (retryCount = 0) => {
     dispatch({ type: 'SET_LOADING', payload: true });
     dispatch({ type: 'SET_ERROR', payload: null });
     
@@ -86,7 +86,22 @@ export function ProductProvider({ children }: ProductProviderProps) {
         dispatch({ type: 'SET_SELECTED_PRODUCT', payload: selectedId.id });
       }
     } catch (error) {
-      dispatch({ type: 'SET_ERROR', payload: error instanceof Error ? error.message : 'Failed to load products' });
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load products';
+      
+      // Retry on network errors up to 2 times with exponential backoff
+      if (retryCount < 2 && (
+        errorMessage.includes('CONNECTION_CLOSED') || 
+        errorMessage.includes('network') ||
+        errorMessage.includes('fetch')
+      )) {
+        console.log(`Retrying product load (attempt ${retryCount + 1}/2)...`);
+        setTimeout(() => {
+          loadProducts(retryCount + 1);
+        }, Math.pow(2, retryCount) * 1000); // 1s, 2s delays
+        return;
+      }
+      
+      dispatch({ type: 'SET_ERROR', payload: errorMessage });
     } finally {
       dispatch({ type: 'SET_LOADING', payload: false });
     }

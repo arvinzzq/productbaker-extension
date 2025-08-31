@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { ProductProvider } from './hooks/useProducts';
 import { I18nProvider } from './hooks/useI18n';
 import { SidePanelContent } from './components/SidePanelContent';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import './globals.css';
 
 function SidePanel() {
@@ -31,13 +32,15 @@ function SidePanel() {
   }, []);
 
   return (
-    <I18nProvider>
-      <ProductProvider>
-        <div className="w-full h-screen bg-background text-foreground">
-          <SidePanelContent />
-        </div>
-      </ProductProvider>
-    </I18nProvider>
+    <ErrorBoundary>
+      <I18nProvider>
+        <ProductProvider>
+          <div className="w-full h-screen bg-background text-foreground">
+            <SidePanelContent />
+          </div>
+        </ProductProvider>
+      </I18nProvider>
+    </ErrorBoundary>
   );
 }
 
