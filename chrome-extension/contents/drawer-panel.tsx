@@ -11,7 +11,7 @@ import styleText from "data-text:../globals.css"
 import iconUrl from "data-base64:../assets/icon.png"
 
 export const config = {
-  matches: ["https://*/*"],
+  matches: ["https://*/*", "http://*/*"],
   all_frames: false,
   run_at: "document_idle"
 }
