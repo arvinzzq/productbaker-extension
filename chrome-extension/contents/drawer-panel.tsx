@@ -198,8 +198,6 @@ const DrawerFloatingPanel: React.FC = () => {
       }
     }
   }, [])
-  
-  console.log('DrawerFloatingPanel rendering, isOpen:', isOpen);
 
   return (
     <Drawer open={isOpen} onOpenChange={setIsOpen}>
@@ -279,7 +277,7 @@ const DrawerFloatingPanel: React.FC = () => {
                 contentReady ? 'opacity-100' : 'opacity-0'
               }`}
               title="ProductBaker SEO Analysis"
-              sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-top-navigation"
+              sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-top-navigation allow-downloads"
               referrerPolicy="no-referrer-when-downgrade"
               onLoad={() => {
                 console.log('Iframe loaded successfully');
