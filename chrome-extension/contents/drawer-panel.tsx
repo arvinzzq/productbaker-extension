@@ -19,7 +19,51 @@ export const config = {
 export const getStyle = () => {
   const style = document.createElement("style")
   // Replace :root with :host for proper CSS isolation in shadow DOM
-  style.textContent = styleText.replaceAll(':root', ':host(plasmo-csui)')
+  style.textContent = styleText.replaceAll(':root', ':host(plasmo-csui)') + `
+    .loading-dots {
+      display: inline-block;
+      position: relative;
+      width: 40px;
+      height: 40px;
+    }
+    .loading-dots div {
+      position: absolute;
+      top: 16px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #22c55e;
+      animation-timing-function: cubic-bezier(0, 1, 1, 0);
+    }
+    .loading-dots div:nth-child(1) {
+      left: 6px;
+      animation: loading-dots1 0.6s infinite;
+    }
+    .loading-dots div:nth-child(2) {
+      left: 6px;
+      animation: loading-dots2 0.6s infinite;
+    }
+    .loading-dots div:nth-child(3) {
+      left: 17px;
+      animation: loading-dots2 0.6s infinite;
+    }
+    .loading-dots div:nth-child(4) {
+      left: 28px;
+      animation: loading-dots3 0.6s infinite;
+    }
+    @keyframes loading-dots1 {
+      0% { transform: scale(0); }
+      100% { transform: scale(1); }
+    }
+    @keyframes loading-dots2 {
+      0% { transform: translate(0, 0); }
+      100% { transform: translate(11px, 0); }
+    }
+    @keyframes loading-dots3 {
+      0% { transform: scale(1); }
+      100% { transform: scale(0); }
+    }
+  `
   return style
 }
 
@@ -315,21 +359,17 @@ const DrawerFloatingPanel: React.FC = () => {
           )}
           
           {isLoading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-green-50 to-white z-10 transition-all duration-300">
-              <div className="flex flex-col items-center gap-4 px-6 py-8 bg-white/80 rounded-xl shadow-lg backdrop-blur-sm">
-                <div className="relative">
-                  <div className="w-12 h-12 border-4 border-green-200 rounded-full animate-spin">
-                    <div className="absolute top-0 left-0 w-4 h-4 bg-green-600 rounded-full transform rotate-45"></div>
-                  </div>
+            <div className="absolute inset-0 flex items-center justify-center bg-white z-10 transition-opacity duration-300">
+              <div className="flex flex-col items-center gap-3">
+                <div className="loading-dots">
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                  <div></div>
                 </div>
-                <div className="text-center">
-                  <div className="text-sm font-medium text-gray-800 mb-1">
-                    {iframeLoaded ? 'Analyzing page...' : 'Loading analyzer...'}
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    {iframeLoaded ? 'Almost ready!' : 'Please wait'}
-                  </div>
-                </div>
+                <span className="text-sm text-gray-600">
+                  {iframeLoaded ? 'Analyzing page...' : 'Loading analyzer...'}
+                </span>
               </div>
             </div>
           )}
