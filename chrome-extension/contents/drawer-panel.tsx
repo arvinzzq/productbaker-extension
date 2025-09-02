@@ -34,6 +34,7 @@ const DrawerFloatingPanel: React.FC = () => {
   const [iframeInitialized, setIframeInitialized] = useState(false)
   const [iframeLoaded, setIframeLoaded] = useState(false)
   const [contentReady, setContentReady] = useState(false)
+  const [showIframe, setShowIframe] = useState(false)
 
   // Function to collect current page data
   const getPageData = () => {
@@ -62,6 +63,7 @@ const DrawerFloatingPanel: React.FC = () => {
         console.log('Page data sent to iframe:', pageData);
         setContentReady(true);
         setIsLoading(false);
+        setShowIframe(true);
       }
     };
 
@@ -91,22 +93,34 @@ const DrawerFloatingPanel: React.FC = () => {
 
   useEffect(() => {
     let loadingTimer: NodeJS.Timeout | null = null;
+    let fallbackTimer: NodeJS.Timeout | null = null;
     
-    // Set loading timeout - wait longer for better UX
+    // Immediate fallback for iframe load - show after basic load completes
+    if (isOpen && isLoading && iframeLoaded && !contentReady) {
+      fallbackTimer = setTimeout(() => {
+        console.log('Fallback timeout reached, showing iframe');
+        setShowIframe(true);
+        setContentReady(true);
+        setIsLoading(false);
+      }, 500); // Much shorter fallback - just 0.5 seconds after iframe loads
+    }
+    
+    // Ultimate timeout as safety net
     if (isOpen && isLoading && !contentReady) {
       loadingTimer = setTimeout(() => {
-        console.log('Loading timeout reached, hiding loading state');
+        console.log('Ultimate timeout reached, forcing content display');
         setIsLoading(false);
-        // Only show content if iframe has loaded
-        if (iframeLoaded) {
-          setContentReady(true);
-        }
-      }, 5000); // 5 seconds timeout - longer wait
+        setShowIframe(true);
+        setContentReady(true);
+      }, 2000); // Reduced to 2 seconds total
     }
     
     return () => {
       if (loadingTimer) {
         clearTimeout(loadingTimer);
+      }
+      if (fallbackTimer) {
+        clearTimeout(fallbackTimer);
       }
     };
   }, [isOpen, isLoading, contentReady, iframeLoaded]);
@@ -136,6 +150,7 @@ const DrawerFloatingPanel: React.FC = () => {
               setIframeError(false);
               setIframeLoaded(false);
               setContentReady(false);
+              setShowIframe(false);
               setIframeKey(prevKey => prevKey + 1);
               setIframeInitialized(true);
             }
@@ -222,6 +237,7 @@ const DrawerFloatingPanel: React.FC = () => {
                   setIframeError(false);
                   setIframeLoaded(false);
                   setContentReady(false);
+                  setShowIframe(false);
                   setIframeKey(prevKey => prevKey + 1);
                 }}
                 className="text-gray-600 hover:text-gray-800 hover:bg-gray-100 transition-all duration-300 w-8 h-8 flex items-center justify-center cursor-pointer rounded-md shadow-sm transform hover:scale-110 hover:shadow-md"
@@ -273,8 +289,8 @@ const DrawerFloatingPanel: React.FC = () => {
             <iframe 
               key={iframeKey}
               src={`https://productbaker.com/extension/seo-analysis?url=${encodeURIComponent(currentUrl)}&extension=true&t=${Date.now()}`}
-              className={`w-full h-full border-0 transition-opacity duration-300 ${
-                contentReady ? 'opacity-100' : 'opacity-0'
+              className={`w-full h-full border-0 transition-all duration-500 ease-out ${
+                showIframe && contentReady ? 'opacity-100 transform scale-100' : 'opacity-0 transform scale-95'
               }`}
               title="ProductBaker SEO Analysis"
               sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-top-navigation allow-downloads"
@@ -283,13 +299,13 @@ const DrawerFloatingPanel: React.FC = () => {
                 console.log('Iframe loaded successfully');
                 setIframeLoaded(true);
                 setIframeError(false);
-                // Don't immediately hide loading - wait for IFRAME_READY message or timeout
               }}
               onError={() => {
                 console.error('Iframe load error');
                 setIsLoading(false);
                 setIframeLoaded(false);
                 setContentReady(false);
+                setShowIframe(false);
                 setIframeError(true);
               }}
               style={{
@@ -299,34 +315,21 @@ const DrawerFloatingPanel: React.FC = () => {
           )}
           
           {isLoading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-white/95 z-10 transition-opacity duration-300">
-              <div className="flex flex-col items-center gap-3">
-                <div className="flex space-x-1">
-                  <div 
-                    className="w-3 h-3 bg-green-600 rounded-full"
-                    style={{
-                      animation: 'bounce 1s infinite ease-in-out',
-                      animationDelay: '0s'
-                    }}
-                  ></div>
-                  <div 
-                    className="w-3 h-3 bg-green-600 rounded-full"
-                    style={{
-                      animation: 'bounce 1s infinite ease-in-out',
-                      animationDelay: '0.15s'
-                    }}
-                  ></div>
-                  <div 
-                    className="w-3 h-3 bg-green-600 rounded-full"
-                    style={{
-                      animation: 'bounce 1s infinite ease-in-out',
-                      animationDelay: '0.3s'
-                    }}
-                  ></div>
+            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-green-50 to-white z-10 transition-all duration-300">
+              <div className="flex flex-col items-center gap-4 px-6 py-8 bg-white/80 rounded-xl shadow-lg backdrop-blur-sm">
+                <div className="relative">
+                  <div className="w-12 h-12 border-4 border-green-200 rounded-full animate-spin">
+                    <div className="absolute top-0 left-0 w-4 h-4 bg-green-600 rounded-full transform rotate-45"></div>
+                  </div>
                 </div>
-                <span className="text-sm text-gray-600">
-                  {iframeLoaded ? 'Preparing content...' : 'Loading...'}
-                </span>
+                <div className="text-center">
+                  <div className="text-sm font-medium text-gray-800 mb-1">
+                    {iframeLoaded ? 'Analyzing page...' : 'Loading analyzer...'}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {iframeLoaded ? 'Almost ready!' : 'Please wait'}
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -347,6 +350,7 @@ const DrawerFloatingPanel: React.FC = () => {
                     setIsLoading(true);
                     setIframeLoaded(false);
                     setContentReady(false);
+                    setShowIframe(false);
                     setIframeKey(prevKey => prevKey + 1);
                     setIframeInitialized(true);
                   }}
