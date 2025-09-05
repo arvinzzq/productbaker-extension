@@ -79,6 +79,15 @@ const DrawerFloatingPanel: React.FC = () => {
   const [iframeLoaded, setIframeLoaded] = useState(false)
   const [contentReady, setContentReady] = useState(false)
   const [showIframe, setShowIframe] = useState(false)
+  const [userActivated, setUserActivated] = useState(false) // 用户点击过插件图标后置为 true
+  const [iframeSrc, setIframeSrc] = useState<string | null>(null)
+
+  // Smoothly reveal iframe: first make it visible, then hide loader on next paints
+  const revealIframe = () => {
+    setShowIframe(true)
+    // Keep loader visible slightly longer than the fade-in
+    setTimeout(() => setIsLoading(false), 220)
+  }
 
   // Function to collect current page data
   const getPageData = () => {
@@ -106,8 +115,7 @@ const DrawerFloatingPanel: React.FC = () => {
         (event.source as Window)?.postMessage(pageData, event.origin);
         console.log('Page data sent to iframe:', pageData);
         setContentReady(true);
-        setIsLoading(false);
-        setShowIframe(true);
+        revealIframe();
       }
     };
 
@@ -143,19 +151,17 @@ const DrawerFloatingPanel: React.FC = () => {
     if (isOpen && isLoading && iframeLoaded && !contentReady) {
       fallbackTimer = setTimeout(() => {
         console.log('Fallback timeout reached, showing iframe');
-        setShowIframe(true);
         setContentReady(true);
-        setIsLoading(false);
+        revealIframe();
       }, 500); // Much shorter fallback - just 0.5 seconds after iframe loads
     }
     
     // Ultimate timeout as safety net
-    if (isOpen && isLoading && !contentReady) {
+    if (isOpen && isLoading && !contentReady && iframeInitialized) {
       loadingTimer = setTimeout(() => {
         console.log('Ultimate timeout reached, forcing content display');
-        setIsLoading(false);
-        setShowIframe(true);
         setContentReady(true);
+        revealIframe();
       }, 2000); // Reduced to 2 seconds total
     }
     
@@ -167,7 +173,23 @@ const DrawerFloatingPanel: React.FC = () => {
         clearTimeout(fallbackTimer);
       }
     };
-  }, [isOpen, isLoading, contentReady, iframeLoaded]);
+  }, [isOpen, isLoading, contentReady, iframeLoaded, iframeInitialized]);
+
+  // Ensure iframe mounts as soon as the drawer is opened the first time
+  useEffect(() => {
+    if (isOpen && userActivated && !iframeInitialized) {
+      console.log('Mounting iframe on first open')
+      setIsLoading(true)
+      setIframeError(false)
+      setIframeLoaded(false)
+      setContentReady(false)
+      setShowIframe(false)
+      setIframeKey((k) => k + 1)
+      setIframeInitialized(true)
+      const url = currentUrl || window.location.href
+      setIframeSrc(`https://productbaker.com/extension/seo-analysis?url=${encodeURIComponent(url)}&extension=true&t=${Date.now()}`)
+    }
+  }, [isOpen, userActivated, iframeInitialized, currentUrl])
   
   useEffect(() => {
     // 确保初始状态为关闭
@@ -183,21 +205,22 @@ const DrawerFloatingPanel: React.FC = () => {
     const handleMessage = (message: any) => {
       console.log('Content script received message:', message);
       if (message.type === 'TOGGLE_FLOATING_PANEL') {
-        console.log('Toggling drawer...');
+        console.log('User activated via icon click, preparing preload...');
+        setUserActivated(true)
+        // Toggle and, if opening, start preload before the drawer becomes visible
         setIsOpen(prev => {
           const newState = !prev
           console.log('Drawer state changing from', prev, 'to', newState);
-          if (newState) {
-            // Only initialize iframe on first open or if there was an error
-            if (!iframeInitialized || iframeError) {
-              setIsLoading(true);
-              setIframeError(false);
-              setIframeLoaded(false);
-              setContentReady(false);
-              setShowIframe(false);
-              setIframeKey(prevKey => prevKey + 1);
-              setIframeInitialized(true);
-            }
+          if (newState && (!iframeInitialized || iframeError)) {
+            setIsLoading(true);
+            setIframeError(false);
+            setIframeLoaded(false);
+            setContentReady(false);
+            setShowIframe(false);
+            setIframeKey(prevKey => prevKey + 1);
+            setIframeInitialized(true);
+            const url = currentUrl || window.location.href
+            setIframeSrc(`https://productbaker.com/extension/seo-analysis?url=${encodeURIComponent(url)}&extension=true&t=${Date.now()}`)
           }
           return newState
         })
@@ -213,10 +236,22 @@ const DrawerFloatingPanel: React.FC = () => {
     const handleCustomEvent = (event: Event) => {
       console.log('Content script received custom event:', event.type);
       if (event.type === 'TOGGLE_FLOATING_PANEL') {
-        console.log('Toggling drawer via custom event...');
+        console.log('User activated via custom event, preparing preload...');
+        setUserActivated(true)
         setIsOpen(prev => {
           const newState = !prev
           console.log('Custom event - Drawer state changing from', prev, 'to', newState);
+          if (newState && (!iframeInitialized || iframeError)) {
+            setIsLoading(true);
+            setIframeError(false);
+            setIframeLoaded(false);
+            setContentReady(false);
+            setShowIframe(false);
+            setIframeKey(prevKey => prevKey + 1);
+            setIframeInitialized(true);
+            const url = currentUrl || window.location.href
+            setIframeSrc(`https://productbaker.com/extension/seo-analysis?url=${encodeURIComponent(url)}&extension=true&t=${Date.now()}`)
+          }
           return newState
         })
       }
@@ -258,6 +293,27 @@ const DrawerFloatingPanel: React.FC = () => {
     }
   }, [])
 
+  // 仅在用户激活后（第一次打开抽屉）再进行连接预热（可选，不会提前创建 iframe）
+  useEffect(() => {
+    if (!userActivated) return
+    try {
+      const head = document.head || document.getElementsByTagName('head')[0]
+      const hints: HTMLLinkElement[] = []
+      const make = (rel: string, href: string, crossOrigin?: string) => {
+        const l = document.createElement('link')
+        l.rel = rel
+        l.href = href
+        if (crossOrigin !== undefined) l.crossOrigin = crossOrigin
+        head.appendChild(l)
+        hints.push(l)
+      }
+      make('preconnect', 'https://productbaker.com', '')
+      return () => {
+        hints.forEach((l) => l.parentElement?.removeChild(l))
+      }
+    } catch {}
+  }, [userActivated])
+
   return (
     <Drawer open={isOpen} onOpenChange={setIsOpen}>
       <DrawerContent side="right">
@@ -283,6 +339,8 @@ const DrawerFloatingPanel: React.FC = () => {
                   setContentReady(false);
                   setShowIframe(false);
                   setIframeKey(prevKey => prevKey + 1);
+                  const url = currentUrl || window.location.href
+                  setIframeSrc(`https://productbaker.com/extension/seo-analysis?url=${encodeURIComponent(url)}&extension=true&t=${Date.now()}`)
                 }}
                 className="text-gray-600 hover:text-gray-800 hover:bg-gray-100 transition-all duration-300 w-8 h-8 flex items-center justify-center cursor-pointer rounded-md shadow-sm transform hover:scale-110 hover:shadow-md"
                 title="Refresh Analysis"
@@ -332,9 +390,10 @@ const DrawerFloatingPanel: React.FC = () => {
           {iframeInitialized && (
             <iframe 
               key={iframeKey}
-              src={`https://productbaker.com/extension/seo-analysis?url=${encodeURIComponent(currentUrl)}&extension=true&t=${Date.now()}`}
-              className={`w-full h-full border-0 transition-all duration-500 ease-out ${
-                showIframe && contentReady ? 'opacity-100 transform scale-100' : 'opacity-0 transform scale-95'
+              src={iframeSrc || ""}
+              loading="eager"
+              className={`w-full h-full border-0 transition-all duration-200 ease-out ${
+                showIframe ? 'opacity-100 transform scale-100' : 'opacity-0 transform scale-95'
               }`}
               title="ProductBaker SEO Analysis"
               sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-top-navigation allow-downloads"
@@ -343,6 +402,7 @@ const DrawerFloatingPanel: React.FC = () => {
                 console.log('Iframe loaded successfully');
                 setIframeLoaded(true);
                 setIframeError(false);
+                revealIframe();
               }}
               onError={() => {
                 console.error('Iframe load error');
@@ -353,13 +413,14 @@ const DrawerFloatingPanel: React.FC = () => {
                 setIframeError(true);
               }}
               style={{
-                colorScheme: 'light'
+                colorScheme: 'light',
+                willChange: 'opacity, transform'
               }}
             />
           )}
           
           {isLoading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-white z-10 transition-opacity duration-300">
+            <div className="absolute inset-0 flex items-center justify-center bg-transparent z-10 transition-opacity duration-300">
               <div className="flex flex-col items-center gap-3">
                 <div className="loading-dots">
                   <div></div>
@@ -392,6 +453,8 @@ const DrawerFloatingPanel: React.FC = () => {
                     setContentReady(false);
                     setShowIframe(false);
                     setIframeKey(prevKey => prevKey + 1);
+                    const url = currentUrl || window.location.href
+                    setIframeSrc(`https://productbaker.com/extension/seo-analysis?url=${encodeURIComponent(url)}&extension=true&t=${Date.now()}`)
                     setIframeInitialized(true);
                   }}
                   className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
