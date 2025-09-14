@@ -1,7 +1,7 @@
 {
   "name": "productbaker-extension",
   "displayName": "ProductBaker - SEO & Product Growth Toolkit",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "ProductBaker: browser extension delivering real-time analytics, SEO reports, keyword & traffic metrics to boost website growth.",
   "author": "ProductBaker Team",
   "scripts": {
