@@ -63,6 +63,52 @@ export const getStyle = () => {
       0% { transform: scale(1); }
       100% { transform: scale(0); }
     }
+
+    /* Skeleton Loader Styles */
+    .skeleton {
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: skeleton-shimmer 1.5s infinite;
+    }
+
+    @keyframes skeleton-shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .skeleton-header {
+      height: 24px;
+      border-radius: 4px;
+      margin-bottom: 16px;
+    }
+
+    .skeleton-card {
+      background: white;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .skeleton-line {
+      height: 16px;
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+
+    .skeleton-line.short {
+      width: 60%;
+    }
+
+    .skeleton-line.medium {
+      width: 80%;
+    }
+
+    .skeleton-chart {
+      height: 120px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
   `
   return style
 }
@@ -108,10 +154,14 @@ const DrawerFloatingPanel: React.FC = () => {
         return;
       }
 
-      // When iframe is ready, send page data
+      // When iframe is ready, send page data but don't show yet
       if (event.data.type === 'IFRAME_READY') {
         const pageData = getPageData();
         (event.source as Window)?.postMessage(pageData, event.origin);
+      }
+
+      // Only show iframe when content is truly ready
+      if (event.data.type === 'IFRAME_CONTENT_READY') {
         setContentReady(true);
         revealIframe();
       }
@@ -144,20 +194,20 @@ const DrawerFloatingPanel: React.FC = () => {
     let loadingTimer: NodeJS.Timeout | null = null;
     let fallbackTimer: NodeJS.Timeout | null = null;
     
-    // Immediate fallback for iframe load - show after basic load completes
+    // Fallback for iframe load - wait longer for content to be ready
     if (isOpen && isLoading && iframeLoaded && !contentReady) {
       fallbackTimer = setTimeout(() => {
         setContentReady(true);
         revealIframe();
-      }, 500); // Much shorter fallback - just 0.5 seconds after iframe loads
+      }, 2000); // Extended to 2 seconds to allow content rendering
     }
-    
+
     // Ultimate timeout as safety net
     if (isOpen && isLoading && !contentReady && iframeInitialized) {
       loadingTimer = setTimeout(() => {
         setContentReady(true);
         revealIframe();
-      }, 2000); // Reduced to 2 seconds total
+      }, 5000); // Extended to 5 seconds for safety net
     }
     
     return () => {
@@ -278,9 +328,8 @@ const DrawerFloatingPanel: React.FC = () => {
     }
   }, [])
 
-  // 仅在用户激活后（第一次打开抽屉）再进行连接预热（可选，不会提前创建 iframe）
+  // 立即预热网络连接，不等待用户激活
   useEffect(() => {
-    if (!userActivated) return
     try {
       const head = document.head || document.getElementsByTagName('head')[0]
       const hints: HTMLLinkElement[] = []
@@ -292,12 +341,17 @@ const DrawerFloatingPanel: React.FC = () => {
         head.appendChild(l)
         hints.push(l)
       }
+
+      // 预连接到目标域名
       make('preconnect', 'https://extension.productbaker.com', '')
+      // DNS预解析
+      make('dns-prefetch', 'https://extension.productbaker.com')
+
       return () => {
         hints.forEach((l) => l.parentElement?.removeChild(l))
       }
     } catch {}
-  }, [userActivated])
+  }, []) // 空依赖数组，只在初始化时执行
 
   return (
     <Drawer open={isOpen} onOpenChange={setIsOpen}>
@@ -403,17 +457,63 @@ const DrawerFloatingPanel: React.FC = () => {
           )}
           
           {isLoading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-transparent z-10 transition-opacity duration-300">
-              <div className="flex flex-col items-center gap-3">
-                <div className="loading-dots">
-                  <div></div>
-                  <div></div>
-                  <div></div>
-                  <div></div>
+            <div className="absolute inset-0 bg-gray-50 z-10 transition-opacity duration-300 p-4 overflow-y-auto">
+              {/* SEO Analysis Skeleton */}
+              <div className="max-w-4xl mx-auto">
+                {/* Header */}
+                <div className="skeleton skeleton-header"></div>
+
+                {/* Metrics Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div className="skeleton-card">
+                    <div className="skeleton skeleton-line short mb-2"></div>
+                    <div className="skeleton skeleton-line medium"></div>
+                  </div>
+                  <div className="skeleton-card">
+                    <div className="skeleton skeleton-line short mb-2"></div>
+                    <div className="skeleton skeleton-line medium"></div>
+                  </div>
+                  <div className="skeleton-card">
+                    <div className="skeleton skeleton-line short mb-2"></div>
+                    <div className="skeleton skeleton-line medium"></div>
+                  </div>
+                  <div className="skeleton-card">
+                    <div className="skeleton skeleton-line short mb-2"></div>
+                    <div className="skeleton skeleton-line medium"></div>
+                  </div>
                 </div>
-                <span className="text-sm text-gray-600">
-                  {iframeLoaded ? 'Analyzing page...' : 'Loading analyzer...'}
-                </span>
+
+                {/* Performance Chart */}
+                <div className="skeleton-card mb-6">
+                  <div className="skeleton skeleton-line short mb-4"></div>
+                  <div className="skeleton skeleton-chart"></div>
+                </div>
+
+                {/* Analysis Details */}
+                <div className="skeleton-card">
+                  <div className="skeleton skeleton-line short mb-4"></div>
+                  <div className="space-y-3">
+                    <div className="skeleton skeleton-line"></div>
+                    <div className="skeleton skeleton-line medium"></div>
+                    <div className="skeleton skeleton-line"></div>
+                    <div className="skeleton skeleton-line short"></div>
+                  </div>
+                </div>
+
+                {/* Loading Text */}
+                <div className="text-center mt-6">
+                  <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
+                    <div className="loading-dots">
+                      <div></div>
+                      <div></div>
+                      <div></div>
+                      <div></div>
+                    </div>
+                    <span>
+                      {iframeLoaded ? 'Analyzing page content...' : 'Loading SEO analyzer...'}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           )}
